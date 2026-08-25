@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Pelicula {
+  id            Int     @id @default(autoincrement())
+  titulo        String
+  genero        String
+  duracion      Int
+  clasificacion String
+  imagenUrl     String?
+  activa        Boolean @default(true)
+
+  funciones Funcion[]
+}
+
+model Sala {
+  id        Int     @id @default(autoincrement())
+  nombre    String
+  capacidad Int
+  activa    Boolean @default(true)
+
+  funciones Funcion[]
+}
+
+model Funcion {
+  id         Int      @id @default(autoincrement())
+  peliculaId Int
+  salaId     Int
+  fechaHora  DateTime
+  precio     Float
+  estado     String   @default("ACTIVA")
+
+  pelicula Pelicula @relation(fields: [peliculaId], references: [id])
+  sala     Sala     @relation(fields: [salaId], references: [id])
+
+  reservas Reserva[]
+}
+
+model Cliente {
+  id     Int    @id @default(autoincrement())
+  nombre String
+  correo String @unique
+
+  reservas Reserva[]
+}
+
+model Reserva {
+  id          Int      @id @default(autoincrement())
+  clienteId   Int
+  funcionId   Int
+  cantidad    Int
+  total       Float
+  estado      String   @default("ACTIVA")
+  fechaCreada DateTime @default(now())
+
+  cliente Cliente @relation(fields: [clienteId], references: [id])
+  funcion Funcion @relation(fields: [funcionId], references: [id])
+}

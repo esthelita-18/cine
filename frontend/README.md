@@ -1,16 +1,95 @@
-# React + Vite
+# Sistema web de reservas para cine
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación web desarrollada como prueba técnica para administrar películas, salas, funciones y reservas de un cine.
 
-Currently, two official plugins are available:
+## Tecnologías utilizadas
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+### Frontend
+- React
+- Vite
+- JavaScript
+- JSX
+- CSS
+- Fetch API
 
-## React Compiler
+### Backend
+- Node.js
+- Express.js
+- JavaScript
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Base de datos
+- Prisma ORM
+- SQLite
 
-## Expanding the ESLint configuration
+### Control de versiones
+- Git
+- GitHub
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Funcionalidades
+
+### Cartelera
+- Visualización de películas y funciones disponibles.
+- Consulta de fecha, hora, sala y precio.
+- Visualización de entradas disponibles.
+- Filtro por película.
+
+### Reservas
+- Registro del nombre y correo del cliente.
+- Selección de cantidad de entradas.
+- Cálculo del total desde el backend.
+- Validación de disponibilidad.
+- Rechazo de reservas que superen la capacidad de la sala.
+- Historial de reservas.
+- Cancelación de reservas sin eliminar el registro.
+- Liberación automática de cupos al cancelar.
+
+### Administración
+- Registro de películas.
+- Registro de salas.
+- Programación de funciones.
+- Consulta de información almacenada.
+
+## Reglas de negocio principales
+
+- La cantidad de entradas debe ser un número entero mayor que cero.
+- No se permiten reservas para funciones pasadas.
+- No se permiten reservas para funciones canceladas o inactivas.
+- Las reservas activas no pueden superar la capacidad de la sala.
+- El total de una reserva se calcula en el backend:
+
+  total = cantidad de entradas × precio de la función
+
+- Una reserva cancelada permanece en el historial.
+- Una reserva cancelada deja de ocupar cupos.
+
+## Modelo de datos
+
+El sistema utiliza cinco entidades principales:
+
+- Pelicula
+- Sala
+- Funcion
+- Cliente
+- Reserva
+
+Relaciones principales:
+
+- Una película puede tener varias funciones.
+- Una sala puede tener varias funciones.
+- Una función puede tener varias reservas.
+- Un cliente puede realizar varias reservas.
+
+## Datos iniciales
+
+El proyecto incluye un seed con:
+
+- 3 películas.
+- 2 salas.
+- 4 funciones futuras.
+
+## Instalación
+
+Clonar el repositorio:
+
+```bash
+git clone https://github.com/esthelita-18/cine.git

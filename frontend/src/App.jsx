@@ -1,3 +1,5 @@
+
+
 import { useEffect, useState } from "react";
 import "./App.css";
 import Mensaje from "./components/Mensaje";
@@ -36,6 +38,13 @@ function App() {
   const [filtroPelicula, setFiltroPelicula] = useState("");
   const [filtroGenero, setFiltroGenero] = useState("");
   const [filtroFecha, setFiltroFecha] = useState("");
+
+  /* ======================================================
+     ADMINISTRACIÓN
+     ====================================================== */
+
+  const [seccionAdmin, setSeccionAdmin] = useState("peliculas");
+  const [modalAdmin, setModalAdmin] = useState(null);
 
   /* ======================================================
      RESERVA
@@ -141,6 +150,19 @@ function App() {
     setTimeout(() => {
       setMensaje("");
     }, 3000);
+  }
+
+  /* ======================================================
+     MODALES DE ADMINISTRACIÓN
+     ====================================================== */
+
+  function abrirModalAdmin(tipo) {
+    setError("");
+    setModalAdmin(tipo);
+  }
+
+  function cerrarModalAdmin() {
+    setModalAdmin(null);
   }
 
   /* ======================================================
@@ -275,6 +297,8 @@ function App() {
         imagenUrl: "",
       });
 
+      setModalAdmin(null);
+
       await cargarDatos();
     } catch (err) {
       setError(err.message);
@@ -306,6 +330,8 @@ function App() {
         nombre: "",
         capacidad: "",
       });
+
+      setModalAdmin(null);
 
       await cargarDatos();
     } catch (err) {
@@ -347,6 +373,8 @@ function App() {
         fechaHora: "",
         precio: "",
       });
+
+      setModalAdmin(null);
 
       await cargarDatos();
     } catch (err) {
@@ -599,6 +627,30 @@ function App() {
         ) *
         funcionSeleccionada.precio
       : 0;
+
+  /* ======================================================
+     ESTADÍSTICAS DE ADMINISTRACIÓN
+     ====================================================== */
+
+  const peliculasActivas = peliculas.filter(
+    (pelicula) => pelicula.activa
+  ).length;
+
+  const salasActivas = salas.filter(
+    (sala) => sala.activa
+  ).length;
+
+  const funcionesProximas = funciones.filter((funcion) => {
+    return (
+      funcion.estado === "ACTIVA" &&
+      funcion.pelicula.activa &&
+      new Date(funcion.fechaHora) > new Date()
+    );
+  }).length;
+
+  const reservasActivas = reservas.filter(
+    (reserva) => reserva.estado === "ACTIVA"
+  ).length;
 
   return (
     <div className="app">
@@ -1560,377 +1612,302 @@ function App() {
                 ================================================== */}
 
             {vista === "admin" && (
-              <section>
+              <section className="admin-page">
 
-                <h2>
-                  Administración
-                </h2>
+                {/* ENCABEZADO */}
 
-                <div className="formularios-admin">
+                <div className="admin-cabecera">
+                  <div>
+                    <span className="admin-kicker">
+                      Panel de gestión
+                    </span>
 
-                  {/* REGISTRAR PELÍCULA */}
+                    <h2>
+                      Administración
+                    </h2>
 
-                  <form
-                    className="formulario-card"
-                    onSubmit={
-                      manejarCrearPelicula
-                    }
-                  >
+                    <p>
+                      Gestiona películas, salas y funciones desde un solo lugar.
+                    </p>
+                  </div>
 
-                    <h3>
-                      Registrar película
-                    </h3>
-
-                    <input
-                      placeholder="Título"
-                      required
-                      value={
-                        peliculaForm.titulo
-                      }
-                      onChange={(e) =>
-                        setPeliculaForm({
-                          ...peliculaForm,
-                          titulo:
-                            e.target.value,
-                        })
-                      }
-                    />
-
-                    <input
-                      placeholder="Género"
-                      required
-                      value={
-                        peliculaForm.genero
-                      }
-                      onChange={(e) =>
-                        setPeliculaForm({
-                          ...peliculaForm,
-                          genero:
-                            e.target.value,
-                        })
-                      }
-                    />
-
-                    <input
-                      type="number"
-                      min="1"
-                      placeholder="Duración en minutos"
-                      required
-                      value={
-                        peliculaForm.duracion
-                      }
-                      onChange={(e) =>
-                        setPeliculaForm({
-                          ...peliculaForm,
-                          duracion:
-                            e.target.value,
-                        })
-                      }
-                    />
-
-                    <input
-                      placeholder="Clasificación"
-                      required
-                      value={
-                        peliculaForm.clasificacion
-                      }
-                      onChange={(e) =>
-                        setPeliculaForm({
-                          ...peliculaForm,
-                          clasificacion:
-                            e.target.value,
-                        })
-                      }
-                    />
-
-                    <input
-                      placeholder="URL de imagen (opcional)"
-                      value={
-                        peliculaForm.imagenUrl
-                      }
-                      onChange={(e) =>
-                        setPeliculaForm({
-                          ...peliculaForm,
-                          imagenUrl:
-                            e.target.value,
-                        })
-                      }
-                    />
-
-                    <button type="submit">
-                      Registrar película
-                    </button>
-
-                  </form>
-
-                  {/* REGISTRAR SALA */}
-
-                  <form
-                    className="formulario-card"
-                    onSubmit={
-                      manejarCrearSala
-                    }
-                  >
-
-                    <h3>
-                      Registrar sala
-                    </h3>
-
-                    <input
-                      placeholder="Nombre de la sala"
-                      required
-                      value={
-                        salaForm.nombre
-                      }
-                      onChange={(e) =>
-                        setSalaForm({
-                          ...salaForm,
-                          nombre:
-                            e.target.value,
-                        })
-                      }
-                    />
-
-                    <input
-                      type="number"
-                      min="1"
-                      placeholder="Capacidad"
-                      required
-                      value={
-                        salaForm.capacidad
-                      }
-                      onChange={(e) =>
-                        setSalaForm({
-                          ...salaForm,
-                          capacidad:
-                            e.target.value,
-                        })
-                      }
-                    />
-
-                    <button type="submit">
-                      Registrar sala
-                    </button>
-
-                  </form>
-
-                  {/* PROGRAMAR FUNCIÓN */}
-
-                  <form
-                    className="formulario-card"
-                    onSubmit={
-                      manejarCrearFuncion
-                    }
-                  >
-
-                    <h3>
-                      Programar función
-                    </h3>
-
-                    <select
-                      required
-                      value={
-                        funcionForm.peliculaId
-                      }
-                      onChange={(e) =>
-                        setFuncionForm({
-                          ...funcionForm,
-                          peliculaId:
-                            e.target.value,
-                        })
-                      }
+                  <div className="admin-acciones-principales">
+                    <button
+                      type="button"
+                      className="admin-btn-accion"
+                      onClick={() => {
+                        setSeccionAdmin("peliculas");
+                        abrirModalAdmin("pelicula");
+                      }}
                     >
-                      <option value="">
-                        Seleccione película
-                      </option>
-
-                      {peliculas
-                        .filter(
-                          (pelicula) =>
-                            pelicula.activa
-                        )
-                        .map(
-                          (pelicula) => (
-                            <option
-                              key={
-                                pelicula.id
-                              }
-                              value={
-                                pelicula.id
-                              }
-                            >
-                              {
-                                pelicula.titulo
-                              }
-                            </option>
-                          )
-                        )}
-
-                    </select>
-
-                    <select
-                      required
-                      value={
-                        funcionForm.salaId
-                      }
-                      onChange={(e) =>
-                        setFuncionForm({
-                          ...funcionForm,
-                          salaId:
-                            e.target.value,
-                        })
-                      }
-                    >
-                      <option value="">
-                        Seleccione sala
-                      </option>
-
-                      {salas
-                        .filter(
-                          (sala) =>
-                            sala.activa
-                        )
-                        .map(
-                          (sala) => (
-                            <option
-                              key={
-                                sala.id
-                              }
-                              value={
-                                sala.id
-                              }
-                            >
-                              {
-                                sala.nombre
-                              }
-                            </option>
-                          )
-                        )}
-
-                    </select>
-
-                    <input
-                      type="datetime-local"
-                      required
-                      value={
-                        funcionForm.fechaHora
-                      }
-                      onChange={(e) =>
-                        setFuncionForm({
-                          ...funcionForm,
-                          fechaHora:
-                            e.target.value,
-                        })
-                      }
-                    />
-
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0.01"
-                      placeholder="Precio"
-                      required
-                      value={
-                        funcionForm.precio
-                      }
-                      onChange={(e) =>
-                        setFuncionForm({
-                          ...funcionForm,
-                          precio:
-                            e.target.value,
-                        })
-                      }
-                    />
-
-                    <button type="submit">
-                      Programar función
+                      <span>+</span>
+                      Nueva película
                     </button>
 
-                  </form>
+                    <button
+                      type="button"
+                      className="admin-btn-accion secundario-admin"
+                      onClick={() => {
+                        setSeccionAdmin("salas");
+                        abrirModalAdmin("sala");
+                      }}
+                    >
+                      <span>+</span>
+                      Nueva sala
+                    </button>
+
+                    <button
+                      type="button"
+                      className="admin-btn-accion secundario-admin"
+                      onClick={() => {
+                        setSeccionAdmin("funciones");
+                        abrirModalAdmin("funcion");
+                      }}
+                    >
+                      <span>+</span>
+                      Nueva función
+                    </button>
+                  </div>
+                </div>
+
+                {/* ESTADÍSTICAS */}
+
+                <div className="admin-estadisticas">
+
+                  <article className="admin-stat-card">
+                    <div className="admin-stat-icono">
+                      P
+                    </div>
+
+                    <div>
+                      <span className="admin-stat-etiqueta">
+                        Películas
+                      </span>
+
+                      <strong>
+                        {peliculas.length}
+                      </strong>
+
+                      <small>
+                        {peliculasActivas} activas
+                      </small>
+                    </div>
+                  </article>
+
+                  <article className="admin-stat-card">
+                    <div className="admin-stat-icono">
+                      S
+                    </div>
+
+                    <div>
+                      <span className="admin-stat-etiqueta">
+                        Salas
+                      </span>
+
+                      <strong>
+                        {salas.length}
+                      </strong>
+
+                      <small>
+                        {salasActivas} activas
+                      </small>
+                    </div>
+                  </article>
+
+                  <article className="admin-stat-card">
+                    <div className="admin-stat-icono">
+                      F
+                    </div>
+
+                    <div>
+                      <span className="admin-stat-etiqueta">
+                        Funciones
+                      </span>
+
+                      <strong>
+                        {funciones.length}
+                      </strong>
+
+                      <small>
+                        {funcionesProximas} próximas
+                      </small>
+                    </div>
+                  </article>
+
+                  <article className="admin-stat-card">
+                    <div className="admin-stat-icono">
+                      R
+                    </div>
+
+                    <div>
+                      <span className="admin-stat-etiqueta">
+                        Reservas
+                      </span>
+
+                      <strong>
+                        {reservas.length}
+                      </strong>
+
+                      <small>
+                        {reservasActivas} activas
+                      </small>
+                    </div>
+                  </article>
 
                 </div>
 
-                {/* LISTADOS */}
+                {/* NAVEGACIÓN INTERNA */}
 
-                <div className="listados-admin">
+                <div className="admin-tabs">
+                  <button
+                    type="button"
+                    className={
+                      seccionAdmin === "peliculas"
+                        ? "activo"
+                        : ""
+                    }
+                    onClick={() =>
+                      setSeccionAdmin("peliculas")
+                    }
+                  >
+                    Películas
+                    <span>
+                      {peliculas.length}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={
+                      seccionAdmin === "salas"
+                        ? "activo"
+                        : ""
+                    }
+                    onClick={() =>
+                      setSeccionAdmin("salas")
+                    }
+                  >
+                    Salas
+                    <span>
+                      {salas.length}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={
+                      seccionAdmin === "funciones"
+                        ? "activo"
+                        : ""
+                    }
+                    onClick={() =>
+                      setSeccionAdmin("funciones")
+                    }
+                  >
+                    Funciones
+                    <span>
+                      {funciones.length}
+                    </span>
+                  </button>
+                </div>
+
+                {/* PANEL DE CONTENIDO */}
+
+                <div className="admin-panel">
 
                   {/* PELÍCULAS */}
 
-                  <div className="lista-admin">
+                  {seccionAdmin === "peliculas" && (
+                    <>
+                      <div className="admin-panel-header">
+                        <div>
+                          <h3>
+                            Películas registradas
+                          </h3>
 
-                    <h3>
-                      Películas registradas
-                    </h3>
+                          <p>
+                            Consulta el catálogo y administra el estado de cada película.
+                          </p>
+                        </div>
 
-                    {peliculas.length ===
-                    0 ? (
-                      <p className="estado">
-                        No existen películas
-                        registradas.
-                      </p>
-                    ) : (
-                      <div className="tabla-contenedor">
+                        <button
+                          type="button"
+                          className="admin-btn-tabla"
+                          onClick={() =>
+                            abrirModalAdmin("pelicula")
+                          }
+                        >
+                          + Nueva película
+                        </button>
+                      </div>
 
-                        <table>
+                      {peliculas.length === 0 ? (
+                        <div className="estado admin-vacio">
+                          <h3>
+                            No existen películas registradas
+                          </h3>
 
-                          <thead>
-                            <tr>
-                              <th>
-                                Título
-                              </th>
-                              <th>
-                                Género
-                              </th>
-                              <th>
-                                Duración
-                              </th>
-                              <th>
-                                Clasificación
-                              </th>
-                              <th>
-                                Estado
-                              </th>
-                              <th>
-                                Acción
-                              </th>
-                            </tr>
-                          </thead>
+                          <p>
+                            Registra la primera película para comenzar a programar funciones.
+                          </p>
 
-                          <tbody>
+                          <button
+                            type="button"
+                            className="admin-btn-tabla"
+                            onClick={() =>
+                              abrirModalAdmin("pelicula")
+                            }
+                          >
+                            Registrar película
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="tabla-contenedor">
+                          <table>
+                            <thead>
+                              <tr>
+                                <th>Título</th>
+                                <th>Género</th>
+                                <th>Duración</th>
+                                <th>Clasificación</th>
+                                <th>Estado</th>
+                                <th>Acción</th>
+                              </tr>
+                            </thead>
 
-                            {peliculas.map(
-                              (
-                                pelicula
-                              ) => (
-                                <tr
-                                  key={
-                                    pelicula.id
-                                  }
-                                >
-
+                            <tbody>
+                              {peliculas.map((pelicula) => (
+                                <tr key={pelicula.id}>
                                   <td>
-                                    {
-                                      pelicula.titulo
-                                    }
+                                    <div className="tabla-titulo">
+                                      {pelicula.imagenUrl ? (
+                                        <img
+                                          src={pelicula.imagenUrl}
+                                          alt=""
+                                          className="admin-mini-poster"
+                                        />
+                                      ) : (
+                                        <div className="admin-mini-poster sin-poster">
+                                          P
+                                        </div>
+                                      )}
+
+                                      <strong>
+                                        {pelicula.titulo}
+                                      </strong>
+                                    </div>
                                   </td>
 
                                   <td>
-                                    {
-                                      pelicula.genero
-                                    }
+                                    {pelicula.genero}
                                   </td>
 
                                   <td>
-                                    {
-                                      pelicula.duracion
-                                    }{" "}
-                                    min
+                                    {pelicula.duracion} min
                                   </td>
 
                                   <td>
-                                    {
-                                      pelicula.clasificacion
-                                    }
+                                    {pelicula.clasificacion}
                                   </td>
 
                                   <td>
@@ -1950,6 +1927,7 @@ function App() {
                                   <td>
                                     <button
                                       type="button"
+                                      className="admin-btn-editar"
                                       onClick={() =>
                                         abrirEdicionPelicula(
                                           pelicula
@@ -1959,72 +1937,83 @@ function App() {
                                       Editar
                                     </button>
                                   </td>
-
                                 </tr>
-                              )
-                            )}
-
-                          </tbody>
-
-                        </table>
-
-                      </div>
-                    )}
-
-                  </div>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </>
+                  )}
 
                   {/* SALAS */}
 
-                  <div className="lista-admin">
+                  {seccionAdmin === "salas" && (
+                    <>
+                      <div className="admin-panel-header">
+                        <div>
+                          <h3>
+                            Salas registradas
+                          </h3>
 
-                    <h3>
-                      Salas registradas
-                    </h3>
+                          <p>
+                            Revisa la capacidad y disponibilidad administrativa de las salas.
+                          </p>
+                        </div>
 
-                    {salas.length === 0 ? (
-                      <p className="estado">
-                        No existen salas
-                        registradas.
-                      </p>
-                    ) : (
-                      <div className="tabla-contenedor">
+                        <button
+                          type="button"
+                          className="admin-btn-tabla"
+                          onClick={() =>
+                            abrirModalAdmin("sala")
+                          }
+                        >
+                          + Nueva sala
+                        </button>
+                      </div>
 
-                        <table>
+                      {salas.length === 0 ? (
+                        <div className="estado admin-vacio">
+                          <h3>
+                            No existen salas registradas
+                          </h3>
 
-                          <thead>
-                            <tr>
-                              <th>
-                                Nombre
-                              </th>
-                              <th>
-                                Capacidad máxima
-                              </th>
-                              <th>
-                                Estado
-                              </th>
-                            </tr>
-                          </thead>
+                          <p>
+                            Registra una sala antes de programar funciones.
+                          </p>
 
-                          <tbody>
+                          <button
+                            type="button"
+                            className="admin-btn-tabla"
+                            onClick={() =>
+                              abrirModalAdmin("sala")
+                            }
+                          >
+                            Registrar sala
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="tabla-contenedor">
+                          <table>
+                            <thead>
+                              <tr>
+                                <th>Nombre</th>
+                                <th>Capacidad máxima</th>
+                                <th>Estado</th>
+                              </tr>
+                            </thead>
 
-                            {salas.map(
-                              (sala) => (
-                                <tr
-                                  key={
-                                    sala.id
-                                  }
-                                >
-
+                            <tbody>
+                              {salas.map((sala) => (
+                                <tr key={sala.id}>
                                   <td>
-                                    {
-                                      sala.nombre
-                                    }
+                                    <strong>
+                                      {sala.nombre}
+                                    </strong>
                                   </td>
 
                                   <td>
-                                    {
-                                      sala.capacidad
-                                    }
+                                    {sala.capacidad} personas
                                   </td>
 
                                   <td>
@@ -2040,88 +2029,86 @@ function App() {
                                         : "INACTIVA"}
                                     </span>
                                   </td>
-
                                 </tr>
-                              )
-                            )}
-
-                          </tbody>
-
-                        </table>
-
-                      </div>
-                    )}
-
-                  </div>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </>
+                  )}
 
                   {/* FUNCIONES */}
 
-                  <div className="lista-admin">
+                  {seccionAdmin === "funciones" && (
+                    <>
+                      <div className="admin-panel-header">
+                        <div>
+                          <h3>
+                            Funciones programadas
+                          </h3>
 
-                    <h3>
-                      Funciones programadas
-                    </h3>
+                          <p>
+                            Consulta horarios, salas, precios y disponibilidad.
+                          </p>
+                        </div>
 
-                    {funciones.length ===
-                    0 ? (
-                      <p className="estado">
-                        No existen funciones
-                        programadas.
-                      </p>
-                    ) : (
-                      <div className="tabla-contenedor">
+                        <button
+                          type="button"
+                          className="admin-btn-tabla"
+                          onClick={() =>
+                            abrirModalAdmin("funcion")
+                          }
+                        >
+                          + Nueva función
+                        </button>
+                      </div>
 
-                        <table>
+                      {funciones.length === 0 ? (
+                        <div className="estado admin-vacio">
+                          <h3>
+                            No existen funciones programadas
+                          </h3>
 
-                          <thead>
-                            <tr>
-                              <th>
-                                Película
-                              </th>
-                              <th>
-                                Sala
-                              </th>
-                              <th>
-                                Fecha y hora
-                              </th>
-                              <th>
-                                Precio
-                              </th>
-                              <th>
-                                Disponibles
-                              </th>
-                              <th>
-                                Estado
-                              </th>
-                            </tr>
-                          </thead>
+                          <p>
+                            Programa una función utilizando una película y una sala activas.
+                          </p>
 
-                          <tbody>
+                          <button
+                            type="button"
+                            className="admin-btn-tabla"
+                            onClick={() =>
+                              abrirModalAdmin("funcion")
+                            }
+                          >
+                            Programar función
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="tabla-contenedor">
+                          <table>
+                            <thead>
+                              <tr>
+                                <th>Película</th>
+                                <th>Sala</th>
+                                <th>Fecha y hora</th>
+                                <th>Precio</th>
+                                <th>Disponibles</th>
+                                <th>Estado</th>
+                              </tr>
+                            </thead>
 
-                            {funciones.map(
-                              (
-                                funcion
-                              ) => (
-                                <tr
-                                  key={
-                                    funcion.id
-                                  }
-                                >
-
+                            <tbody>
+                              {funciones.map((funcion) => (
+                                <tr key={funcion.id}>
                                   <td>
-                                    {
-                                      funcion
-                                        .pelicula
-                                        .titulo
-                                    }
+                                    <strong>
+                                      {funcion.pelicula.titulo}
+                                    </strong>
                                   </td>
 
                                   <td>
-                                    {
-                                      funcion
-                                        .sala
-                                        .nombre
-                                    }
+                                    {funcion.sala.nombre}
                                   </td>
 
                                   <td>
@@ -2133,47 +2120,410 @@ function App() {
                                   </td>
 
                                   <td>
-                                    $
-                                    {funcion.precio.toFixed(
-                                      2
-                                    )}
+                                    ${funcion.precio.toFixed(2)}
                                   </td>
 
                                   <td>
-                                    {
-                                      funcion.disponibles
-                                    }
+                                    {funcion.disponibles}
                                   </td>
 
                                   <td>
                                     <span
                                       className={
-                                        funcion.estado ===
-                                        "ACTIVA"
+                                        funcion.estado === "ACTIVA"
                                           ? "estado-activo"
                                           : "estado-cancelado"
                                       }
                                     >
-                                      {
-                                        funcion.estado
-                                      }
+                                      {funcion.estado}
                                     </span>
                                   </td>
-
                                 </tr>
-                              )
-                            )}
-
-                          </tbody>
-
-                        </table>
-
-                      </div>
-                    )}
-
-                  </div>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </>
+                  )}
 
                 </div>
+
+                {/* ==================================================
+                    MODAL NUEVA PELÍCULA
+                    ================================================== */}
+
+                {modalAdmin === "pelicula" && (
+                  <div className="modal-fondo">
+                    <div className="modal modal-admin">
+
+                      <div className="admin-modal-header">
+                        <div>
+                          <span>
+                            Catálogo
+                          </span>
+
+                          <h2>
+                            Nueva película
+                          </h2>
+
+                          <p>
+                            Ingresa la información que se mostrará en la cartelera.
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="modal-cerrar"
+                          onClick={cerrarModalAdmin}
+                          aria-label="Cerrar"
+                        >
+                          ×
+                        </button>
+                      </div>
+
+                      <form onSubmit={manejarCrearPelicula}>
+
+                        <label>
+                          Título
+                          <input
+                            type="text"
+                            placeholder="Ej. Interestelar"
+                            required
+                            value={peliculaForm.titulo}
+                            onChange={(e) =>
+                              setPeliculaForm({
+                                ...peliculaForm,
+                                titulo: e.target.value,
+                              })
+                            }
+                          />
+                        </label>
+
+                        <div className="admin-form-grid">
+                          <label>
+                            Género
+                            <input
+                              type="text"
+                              placeholder="Ej. Ciencia ficción"
+                              required
+                              value={peliculaForm.genero}
+                              onChange={(e) =>
+                                setPeliculaForm({
+                                  ...peliculaForm,
+                                  genero: e.target.value,
+                                })
+                              }
+                            />
+                          </label>
+
+                          <label>
+                            Duración
+                            <input
+                              type="number"
+                              min="1"
+                              placeholder="Minutos"
+                              required
+                              value={peliculaForm.duracion}
+                              onChange={(e) =>
+                                setPeliculaForm({
+                                  ...peliculaForm,
+                                  duracion: e.target.value,
+                                })
+                              }
+                            />
+                          </label>
+                        </div>
+
+                        <label>
+                          Clasificación
+                          <input
+                            type="text"
+                            placeholder="Ej. PG-13"
+                            required
+                            value={peliculaForm.clasificacion}
+                            onChange={(e) =>
+                              setPeliculaForm({
+                                ...peliculaForm,
+                                clasificacion: e.target.value,
+                              })
+                            }
+                          />
+                        </label>
+
+                        <label>
+                          URL de imagen
+                          <input
+                            type="url"
+                            placeholder="https://..."
+                            value={peliculaForm.imagenUrl}
+                            onChange={(e) =>
+                              setPeliculaForm({
+                                ...peliculaForm,
+                                imagenUrl: e.target.value,
+                              })
+                            }
+                          />
+                        </label>
+
+                        <div className="admin-modal-acciones">
+                          <button type="submit">
+                            Registrar película
+                          </button>
+
+                          <button
+                            type="button"
+                            className="secundario"
+                            onClick={cerrarModalAdmin}
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+
+                      </form>
+                    </div>
+                  </div>
+                )}
+
+                {/* ==================================================
+                    MODAL NUEVA SALA
+                    ================================================== */}
+
+                {modalAdmin === "sala" && (
+                  <div className="modal-fondo">
+                    <div className="modal modal-admin">
+
+                      <div className="admin-modal-header">
+                        <div>
+                          <span>
+                            Infraestructura
+                          </span>
+
+                          <h2>
+                            Nueva sala
+                          </h2>
+
+                          <p>
+                            Define el nombre y la capacidad máxima de la sala.
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="modal-cerrar"
+                          onClick={cerrarModalAdmin}
+                          aria-label="Cerrar"
+                        >
+                          ×
+                        </button>
+                      </div>
+
+                      <form onSubmit={manejarCrearSala}>
+
+                        <label>
+                          Nombre de la sala
+                          <input
+                            type="text"
+                            placeholder="Ej. Sala 1"
+                            required
+                            value={salaForm.nombre}
+                            onChange={(e) =>
+                              setSalaForm({
+                                ...salaForm,
+                                nombre: e.target.value,
+                              })
+                            }
+                          />
+                        </label>
+
+                        <label>
+                          Capacidad máxima
+                          <input
+                            type="number"
+                            min="1"
+                            placeholder="Ej. 40"
+                            required
+                            value={salaForm.capacidad}
+                            onChange={(e) =>
+                              setSalaForm({
+                                ...salaForm,
+                                capacidad: e.target.value,
+                              })
+                            }
+                          />
+                        </label>
+
+                        <div className="admin-modal-acciones">
+                          <button type="submit">
+                            Registrar sala
+                          </button>
+
+                          <button
+                            type="button"
+                            className="secundario"
+                            onClick={cerrarModalAdmin}
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+
+                      </form>
+                    </div>
+                  </div>
+                )}
+
+                {/* ==================================================
+                    MODAL NUEVA FUNCIÓN
+                    ================================================== */}
+
+                {modalAdmin === "funcion" && (
+                  <div className="modal-fondo">
+                    <div className="modal modal-admin">
+
+                      <div className="admin-modal-header">
+                        <div>
+                          <span>
+                            Programación
+                          </span>
+
+                          <h2>
+                            Nueva función
+                          </h2>
+
+                          <p>
+                            Selecciona película, sala, fecha, hora y precio.
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="modal-cerrar"
+                          onClick={cerrarModalAdmin}
+                          aria-label="Cerrar"
+                        >
+                          ×
+                        </button>
+                      </div>
+
+                      <form onSubmit={manejarCrearFuncion}>
+
+                        <label>
+                          Película
+                          <select
+                            required
+                            value={funcionForm.peliculaId}
+                            onChange={(e) =>
+                              setFuncionForm({
+                                ...funcionForm,
+                                peliculaId: e.target.value,
+                              })
+                            }
+                          >
+                            <option value="">
+                              Seleccione película
+                            </option>
+
+                            {peliculas
+                              .filter(
+                                (pelicula) =>
+                                  pelicula.activa
+                              )
+                              .map((pelicula) => (
+                                <option
+                                  key={pelicula.id}
+                                  value={pelicula.id}
+                                >
+                                  {pelicula.titulo}
+                                </option>
+                              ))}
+                          </select>
+                        </label>
+
+                        <label>
+                          Sala
+                          <select
+                            required
+                            value={funcionForm.salaId}
+                            onChange={(e) =>
+                              setFuncionForm({
+                                ...funcionForm,
+                                salaId: e.target.value,
+                              })
+                            }
+                          >
+                            <option value="">
+                              Seleccione sala
+                            </option>
+
+                            {salas
+                              .filter(
+                                (sala) =>
+                                  sala.activa
+                              )
+                              .map((sala) => (
+                                <option
+                                  key={sala.id}
+                                  value={sala.id}
+                                >
+                                  {sala.nombre}
+                                </option>
+                              ))}
+                          </select>
+                        </label>
+
+                        <div className="admin-form-grid">
+                          <label>
+                            Fecha y hora
+                            <input
+                              type="datetime-local"
+                              required
+                              value={funcionForm.fechaHora}
+                              onChange={(e) =>
+                                setFuncionForm({
+                                  ...funcionForm,
+                                  fechaHora: e.target.value,
+                                })
+                              }
+                            />
+                          </label>
+
+                          <label>
+                            Precio
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0.01"
+                              placeholder="Ej. 5.50"
+                              required
+                              value={funcionForm.precio}
+                              onChange={(e) =>
+                                setFuncionForm({
+                                  ...funcionForm,
+                                  precio: e.target.value,
+                                })
+                              }
+                            />
+                          </label>
+                        </div>
+
+                        <div className="admin-modal-acciones">
+                          <button type="submit">
+                            Programar función
+                          </button>
+
+                          <button
+                            type="button"
+                            className="secundario"
+                            onClick={cerrarModalAdmin}
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+
+                      </form>
+                    </div>
+                  </div>
+                )}
 
                 {/* ==================================================
                     MODAL EDITAR PELÍCULA
@@ -2181,141 +2531,130 @@ function App() {
 
                 {peliculaEditando && (
                   <div className="modal-fondo">
+                    <div className="modal modal-admin">
 
-                    <div className="modal">
+                      <div className="admin-modal-header">
+                        <div>
+                          <span>
+                            Catálogo
+                          </span>
 
-                      <h2>
-                        Editar película
-                      </h2>
+                          <h2>
+                            Editar película
+                          </h2>
 
-                      <form
-                        onSubmit={
-                          manejarEditarPelicula
-                        }
-                      >
+                          <p>
+                            Actualiza los datos o cambia el estado de la película.
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="modal-cerrar"
+                          onClick={cerrarEdicionPelicula}
+                          aria-label="Cerrar"
+                        >
+                          ×
+                        </button>
+                      </div>
+
+                      <form onSubmit={manejarEditarPelicula}>
 
                         <label>
                           Título
-
                           <input
                             type="text"
                             required
-                            value={
-                              edicionPeliculaForm.titulo
-                            }
+                            value={edicionPeliculaForm.titulo}
                             onChange={(e) =>
                               setEdicionPeliculaForm({
                                 ...edicionPeliculaForm,
-                                titulo:
-                                  e.target.value,
+                                titulo: e.target.value,
                               })
                             }
                           />
-
                         </label>
 
-                        <label>
-                          Género
+                        <div className="admin-form-grid">
+                          <label>
+                            Género
+                            <input
+                              type="text"
+                              required
+                              value={edicionPeliculaForm.genero}
+                              onChange={(e) =>
+                                setEdicionPeliculaForm({
+                                  ...edicionPeliculaForm,
+                                  genero: e.target.value,
+                                })
+                              }
+                            />
+                          </label>
 
-                          <input
-                            type="text"
-                            required
-                            value={
-                              edicionPeliculaForm.genero
-                            }
-                            onChange={(e) =>
-                              setEdicionPeliculaForm({
-                                ...edicionPeliculaForm,
-                                genero:
-                                  e.target.value,
-                              })
-                            }
-                          />
-
-                        </label>
-
-                        <label>
-                          Duración en minutos
-
-                          <input
-                            type="number"
-                            min="1"
-                            required
-                            value={
-                              edicionPeliculaForm.duracion
-                            }
-                            onChange={(e) =>
-                              setEdicionPeliculaForm({
-                                ...edicionPeliculaForm,
-                                duracion:
-                                  e.target.value,
-                              })
-                            }
-                          />
-
-                        </label>
+                          <label>
+                            Duración en minutos
+                            <input
+                              type="number"
+                              min="1"
+                              required
+                              value={edicionPeliculaForm.duracion}
+                              onChange={(e) =>
+                                setEdicionPeliculaForm({
+                                  ...edicionPeliculaForm,
+                                  duracion: e.target.value,
+                                })
+                              }
+                            />
+                          </label>
+                        </div>
 
                         <label>
                           Clasificación
-
                           <input
                             type="text"
                             required
-                            value={
-                              edicionPeliculaForm.clasificacion
-                            }
+                            value={edicionPeliculaForm.clasificacion}
                             onChange={(e) =>
                               setEdicionPeliculaForm({
                                 ...edicionPeliculaForm,
-                                clasificacion:
-                                  e.target.value,
+                                clasificacion: e.target.value,
                               })
                             }
                           />
-
                         </label>
 
                         <label>
                           URL de imagen
-
                           <input
-                            type="text"
-                            value={
-                              edicionPeliculaForm.imagenUrl
-                            }
+                            type="url"
+                            value={edicionPeliculaForm.imagenUrl}
                             onChange={(e) =>
                               setEdicionPeliculaForm({
                                 ...edicionPeliculaForm,
-                                imagenUrl:
-                                  e.target.value,
+                                imagenUrl: e.target.value,
                               })
                             }
                           />
-
                         </label>
 
-                        <label>
-
+                        <label className="admin-check">
                           <input
                             type="checkbox"
-                            checked={
-                              edicionPeliculaForm.activa
-                            }
+                            checked={edicionPeliculaForm.activa}
                             onChange={(e) =>
                               setEdicionPeliculaForm({
                                 ...edicionPeliculaForm,
-                                activa:
-                                  e.target.checked,
+                                activa: e.target.checked,
                               })
                             }
                           />
 
-                          Película activa
-
+                          <span>
+                            Película activa
+                          </span>
                         </label>
 
-                        <div className="acciones">
-
+                        <div className="admin-modal-acciones">
                           <button type="submit">
                             Guardar cambios
                           </button>
@@ -2323,19 +2662,14 @@ function App() {
                           <button
                             type="button"
                             className="secundario"
-                            onClick={
-                              cerrarEdicionPelicula
-                            }
+                            onClick={cerrarEdicionPelicula}
                           >
                             Cancelar
                           </button>
-
                         </div>
 
                       </form>
-
                     </div>
-
                   </div>
                 )}
 
@@ -2352,3 +2686,4 @@ function App() {
 }
 
 export default App;
+

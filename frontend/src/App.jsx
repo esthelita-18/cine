@@ -1,9 +1,8 @@
-
-
 import { useEffect, useState } from "react";
 import "./App.css";
 import Mensaje from "./components/Mensaje";
 import FuncionCard from "./components/FuncionCard";
+import CargaVista from "./components/CargaVista";
 
 import {
   obtenerPeliculas,
@@ -796,9 +795,7 @@ function App() {
         />
 
         {cargando ? (
-          <p className="estado">
-            Cargando información...
-          </p>
+          <CargaVista vista={vista} />
         ) : (
           <>
 

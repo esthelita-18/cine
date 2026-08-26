@@ -30,7 +30,8 @@ function App() {
 
   const [filtroPelicula, setFiltroPelicula] = useState("");
 
-  const [funcionSeleccionada, setFuncionSeleccionada] = useState(null);
+  const [funcionSeleccionada, setFuncionSeleccionada] =
+    useState(null);
 
   const [reservaForm, setReservaForm] = useState({
     nombre: "",
@@ -46,17 +47,22 @@ function App() {
     imagenUrl: "",
   });
 
-  /* ESTADOS PARA EDITAR UNA PELÍCULA */
-  const [peliculaEditando, setPeliculaEditando] = useState(null);
+  /* ======================================================
+     ESTADOS PARA EDITAR UNA PELÍCULA
+     ====================================================== */
 
-  const [edicionPeliculaForm, setEdicionPeliculaForm] = useState({
-    titulo: "",
-    genero: "",
-    duracion: "",
-    clasificacion: "",
-    imagenUrl: "",
-    activa: true,
-  });
+  const [peliculaEditando, setPeliculaEditando] =
+    useState(null);
+
+  const [edicionPeliculaForm, setEdicionPeliculaForm] =
+    useState({
+      titulo: "",
+      genero: "",
+      duracion: "",
+      clasificacion: "",
+      imagenUrl: "",
+      activa: true,
+    });
 
   const [salaForm, setSalaForm] = useState({
     nombre: "",
@@ -69,6 +75,10 @@ function App() {
     fechaHora: "",
     precio: "",
   });
+
+  /* ======================================================
+     CARGA GENERAL DE DATOS
+     ====================================================== */
 
   async function cargarDatos() {
     try {
@@ -102,6 +112,10 @@ function App() {
     cargarDatos();
   }, []);
 
+  /* ======================================================
+     MENSAJES
+     ====================================================== */
+
   function mostrarMensaje(texto) {
     setMensaje(texto);
 
@@ -109,6 +123,10 @@ function App() {
       setMensaje("");
     }, 3000);
   }
+
+  /* ======================================================
+     RESERVAS
+     ====================================================== */
 
   async function manejarReserva(e) {
     e.preventDefault();
@@ -157,6 +175,10 @@ function App() {
     }
   }
 
+  /* ======================================================
+     CREAR PELÍCULA
+     ====================================================== */
+
   async function manejarCrearPelicula(e) {
     e.preventDefault();
 
@@ -184,6 +206,10 @@ function App() {
     }
   }
 
+  /* ======================================================
+     CREAR SALA
+     ====================================================== */
+
   async function manejarCrearSala(e) {
     e.preventDefault();
 
@@ -207,6 +233,10 @@ function App() {
       setError(err.message);
     }
   }
+
+  /* ======================================================
+     CREAR FUNCIÓN
+     ====================================================== */
 
   async function manejarCrearFuncion(e) {
     e.preventDefault();
@@ -236,7 +266,9 @@ function App() {
     }
   }
 
-  /* ================= EDICIÓN DE PELÍCULAS ================= */
+  /* ======================================================
+     EDICIÓN DE PELÍCULAS
+     ====================================================== */
 
   function abrirEdicionPelicula(pelicula) {
     setPeliculaEditando(pelicula);
@@ -280,47 +312,110 @@ function App() {
     }
   }
 
-  const funcionesCartelera = funciones.filter((funcion) => {
-    const futura = new Date(funcion.fechaHora) > new Date();
-    const activa = funcion.estado === "ACTIVA";
+  /* ======================================================
+     CARTELERA
+     ====================================================== */
 
-    const coincidePelicula =
-      filtroPelicula === "" ||
-      funcion.pelicula.id === Number(filtroPelicula);
+  const funcionesCartelera = funciones
+    .filter((funcion) => {
+      const futura =
+        new Date(funcion.fechaHora) > new Date();
 
-    return futura && activa && coincidePelicula;
-  });
+      const activa =
+        funcion.estado === "ACTIVA";
+
+      const peliculaActiva =
+        funcion.pelicula.activa;
+
+      const coincidePelicula =
+        filtroPelicula === "" ||
+        funcion.pelicula.id ===
+          Number(filtroPelicula);
+
+      return (
+        futura &&
+        activa &&
+        peliculaActiva &&
+        coincidePelicula
+      );
+    })
+    .sort(
+      (a, b) =>
+        new Date(a.fechaHora) -
+        new Date(b.fechaHora)
+    );
+
+  /* ======================================================
+     PELÍCULA DESTACADA
+     La función futura más próxima se utiliza como Hero.
+     ====================================================== */
+
+  const funcionDestacada =
+    funcionesCartelera.length > 0
+      ? funcionesCartelera[0]
+      : null;
+
+  /* ======================================================
+     TOTAL VISUAL DE LA RESERVA
+     El backend sigue siendo quien calcula el total real.
+     ====================================================== */
 
   const totalVisual = funcionSeleccionada
-    ? Number(reservaForm.cantidad || 0) * funcionSeleccionada.precio
+    ? Number(reservaForm.cantidad || 0) *
+      funcionSeleccionada.precio
     : 0;
 
   return (
     <div className="app">
+      {/* ==================================================
+          ENCABEZADO
+          ================================================== */}
+
       <header className="encabezado">
         <div>
           <h1>Cine Reservas</h1>
-          <p>Sistema de gestión y reserva de funciones</p>
+
+          <p>
+            Sistema de gestión y reserva de funciones
+          </p>
         </div>
 
         <nav>
           <button
-            className={vista === "cartelera" ? "activo" : ""}
-            onClick={() => setVista("cartelera")}
+            className={
+              vista === "cartelera"
+                ? "activo"
+                : ""
+            }
+            onClick={() =>
+              setVista("cartelera")
+            }
           >
             Cartelera
           </button>
 
           <button
-            className={vista === "reservas" ? "activo" : ""}
-            onClick={() => setVista("reservas")}
+            className={
+              vista === "reservas"
+                ? "activo"
+                : ""
+            }
+            onClick={() =>
+              setVista("reservas")
+            }
           >
             Reservas
           </button>
 
           <button
-            className={vista === "admin" ? "activo" : ""}
-            onClick={() => setVista("admin")}
+            className={
+              vista === "admin"
+                ? "activo"
+                : ""
+            }
+            onClick={() =>
+              setVista("admin")
+            }
           >
             Administración
           </button>
@@ -328,81 +423,278 @@ function App() {
       </header>
 
       <main>
-        <Mensaje tipo="exito" texto={mensaje} />
-        <Mensaje tipo="error" texto={error} />
+        <Mensaje
+          tipo="exito"
+          texto={mensaje}
+        />
+
+        <Mensaje
+          tipo="error"
+          texto={error}
+        />
 
         {cargando ? (
-          <p className="estado">Cargando información...</p>
+          <p className="estado">
+            Cargando información...
+          </p>
         ) : (
           <>
-            {/* ================= CARTELERA ================= */}
+            {/* ============================================
+                CARTELERA
+                ============================================ */}
+
             {vista === "cartelera" && (
               <section>
+
+                {/* ========================================
+                    HERO CINEMATOGRÁFICO
+                    ======================================== */}
+
+                {funcionDestacada && (
+                  <div
+                    className="hero-cine"
+                    style={{
+                      backgroundImage:
+                        funcionDestacada.pelicula
+                          .imagenUrl
+                          ? `url("${funcionDestacada.pelicula.imagenUrl}")`
+                          : "none",
+                    }}
+                  >
+                    <div className="hero-overlay" />
+
+                    <div className="hero-contenido">
+
+                      <span className="hero-etiqueta">
+                        Destacada
+                      </span>
+
+                      <h2>
+                        {
+                          funcionDestacada.pelicula
+                            .titulo
+                        }
+                      </h2>
+
+                      <div className="hero-meta">
+
+                        <span>
+                          {
+                            funcionDestacada.pelicula
+                              .genero
+                          }
+                        </span>
+
+                        <span>•</span>
+
+                        <span>
+                          {
+                            funcionDestacada.pelicula
+                              .duracion
+                          }{" "}
+                          min
+                        </span>
+
+                        <span>•</span>
+
+                        <span>
+                          {
+                            funcionDestacada.pelicula
+                              .clasificacion
+                          }
+                        </span>
+
+                      </div>
+
+                      <p className="hero-proxima">
+                        Próxima función:{" "}
+                        {new Date(
+                          funcionDestacada.fechaHora
+                        ).toLocaleString(
+                          "es-EC",
+                          {
+                            weekday: "long",
+                            day: "2-digit",
+                            month: "long",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          }
+                        )}
+                      </p>
+
+                      <div className="hero-detalles">
+
+                        <span>
+                          {
+                            funcionDestacada.sala
+                              .nombre
+                          }
+                        </span>
+
+                        <span>•</span>
+
+                        <span>
+                          {
+                            funcionDestacada.disponibles
+                          }{" "}
+                          lugares disponibles
+                        </span>
+
+                      </div>
+
+                      <div className="hero-precio">
+                        Desde{" "}
+
+                        <strong>
+                          $
+                          {funcionDestacada.precio.toFixed(
+                            2
+                          )}
+                        </strong>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="hero-boton"
+                        disabled={
+                          funcionDestacada.disponibles <=
+                          0
+                        }
+                        onClick={() =>
+                          setFuncionSeleccionada(
+                            funcionDestacada
+                          )
+                        }
+                      >
+                        {funcionDestacada.disponibles >
+                        0
+                          ? "Reservar ahora"
+                          : "Función agotada"}
+                      </button>
+
+                    </div>
+                  </div>
+                )}
+
+                {/* ========================================
+                    TÍTULO Y FILTRO
+                    ======================================== */}
+
                 <div className="titulo-seccion">
                   <div>
                     <h2>Cartelera</h2>
-                    <p>Funciones disponibles para reservar.</p>
+
+                    <p>
+                      Explora nuestras funciones
+                      disponibles y reserva tus
+                      entradas.
+                    </p>
                   </div>
 
                   <select
                     value={filtroPelicula}
-                    onChange={(e) => setFiltroPelicula(e.target.value)}
+                    onChange={(e) =>
+                      setFiltroPelicula(
+                        e.target.value
+                      )
+                    }
                   >
-                    <option value="">Todas las películas</option>
+                    <option value="">
+                      Todas las películas
+                    </option>
 
                     {peliculas
-                      .filter((pelicula) => pelicula.activa)
+                      .filter(
+                        (pelicula) =>
+                          pelicula.activa
+                      )
                       .map((pelicula) => (
-                        <option key={pelicula.id} value={pelicula.id}>
+                        <option
+                          key={pelicula.id}
+                          value={pelicula.id}
+                        >
                           {pelicula.titulo}
                         </option>
                       ))}
                   </select>
                 </div>
 
-                {funcionesCartelera.length === 0 ? (
+                {/* ========================================
+                    TARJETAS
+                    ======================================== */}
+
+                {funcionesCartelera.length ===
+                0 ? (
                   <p className="estado">
-                    No existen funciones disponibles.
+                    No existen funciones
+                    disponibles.
                   </p>
                 ) : (
                   <div className="grid">
-                    {funcionesCartelera.map((funcion) => (
-                      <FuncionCard
-                        key={funcion.id}
-                        funcion={funcion}
-                        onReservar={setFuncionSeleccionada}
-                      />
-                    ))}
+                    {funcionesCartelera.map(
+                      (funcion) => (
+                        <FuncionCard
+                          key={funcion.id}
+                          funcion={funcion}
+                          onReservar={
+                            setFuncionSeleccionada
+                          }
+                        />
+                      )
+                    )}
                   </div>
                 )}
+
+                {/* ========================================
+                    MODAL DE RESERVA
+                    ======================================== */}
 
                 {funcionSeleccionada && (
                   <div className="modal-fondo">
                     <div className="modal">
-                      <h2>Realizar reserva</h2>
+
+                      <h2>
+                        Realizar reserva
+                      </h2>
 
                       <p>
                         <strong>
-                          {funcionSeleccionada.pelicula.titulo}
+                          {
+                            funcionSeleccionada
+                              .pelicula.titulo
+                          }
                         </strong>
                       </p>
 
                       <p>
-                        {funcionSeleccionada.sala.nombre} - $
-                        {funcionSeleccionada.precio.toFixed(2)}
+                        {
+                          funcionSeleccionada
+                            .sala.nombre
+                        }{" "}
+                        - $
+                        {funcionSeleccionada.precio.toFixed(
+                          2
+                        )}
                       </p>
 
-                      <form onSubmit={manejarReserva}>
+                      <form
+                        onSubmit={manejarReserva}
+                      >
+
                         <label>
                           Nombre
+
                           <input
                             type="text"
                             required
-                            value={reservaForm.nombre}
+                            value={
+                              reservaForm.nombre
+                            }
                             onChange={(e) =>
                               setReservaForm({
                                 ...reservaForm,
-                                nombre: e.target.value,
+                                nombre:
+                                  e.target.value,
                               })
                             }
                           />
@@ -410,14 +702,18 @@ function App() {
 
                         <label>
                           Correo
+
                           <input
                             type="email"
                             required
-                            value={reservaForm.correo}
+                            value={
+                              reservaForm.correo
+                            }
                             onChange={(e) =>
                               setReservaForm({
                                 ...reservaForm,
-                                correo: e.target.value,
+                                correo:
+                                  e.target.value,
                               })
                             }
                           />
@@ -425,26 +721,34 @@ function App() {
 
                         <label>
                           Cantidad
+
                           <input
                             type="number"
                             min="1"
-                            max={funcionSeleccionada.disponibles}
+                            max={
+                              funcionSeleccionada.disponibles
+                            }
                             required
-                            value={reservaForm.cantidad}
+                            value={
+                              reservaForm.cantidad
+                            }
                             onChange={(e) =>
                               setReservaForm({
                                 ...reservaForm,
-                                cantidad: e.target.value,
+                                cantidad:
+                                  e.target.value,
                               })
                             }
                           />
                         </label>
 
                         <p className="total">
-                          Total estimado: ${totalVisual.toFixed(2)}
+                          Total estimado: $
+                          {totalVisual.toFixed(2)}
                         </p>
 
                         <div className="acciones">
+
                           <button type="submit">
                             Confirmar reserva
                           </button>
@@ -453,31 +757,43 @@ function App() {
                             type="button"
                             className="secundario"
                             onClick={() =>
-                              setFuncionSeleccionada(null)
+                              setFuncionSeleccionada(
+                                null
+                              )
                             }
                           >
                             Cerrar
                           </button>
+
                         </div>
                       </form>
+
                     </div>
                   </div>
                 )}
               </section>
             )}
 
-            {/* ================= RESERVAS ================= */}
+            {/* ============================================
+                RESERVAS
+                ============================================ */}
+
             {vista === "reservas" && (
               <section>
-                <h2>Historial de reservas</h2>
+
+                <h2>
+                  Historial de reservas
+                </h2>
 
                 {reservas.length === 0 ? (
                   <p className="estado">
-                    No existen reservas registradas.
+                    No existen reservas
+                    registradas.
                   </p>
                 ) : (
                   <div className="tabla-contenedor">
                     <table>
+
                       <thead>
                         <tr>
                           <th>Cliente</th>
@@ -490,76 +806,126 @@ function App() {
                       </thead>
 
                       <tbody>
-                        {reservas.map((reserva) => (
-                          <tr key={reserva.id}>
-                            <td>
-                              {reserva.cliente.nombre}
-                              <br />
-                              <small>{reserva.cliente.correo}</small>
-                            </td>
+                        {reservas.map(
+                          (reserva) => (
+                            <tr key={reserva.id}>
 
-                            <td>{reserva.funcion.pelicula.titulo}</td>
-
-                            <td>{reserva.cantidad}</td>
-
-                            <td>${reserva.total.toFixed(2)}</td>
-
-                            <td>
-                              <span
-                                className={
-                                  reserva.estado === "ACTIVA"
-                                    ? "estado-activo"
-                                    : "estado-cancelado"
+                              <td>
+                                {
+                                  reserva.cliente
+                                    .nombre
                                 }
-                              >
-                                {reserva.estado}
-                              </span>
-                            </td>
 
-                            <td>
-                              {reserva.estado === "ACTIVA" ? (
-                                <button
-                                  className="peligro"
-                                  onClick={() =>
-                                    manejarCancelarReserva(reserva.id)
+                                <br />
+
+                                <small>
+                                  {
+                                    reserva.cliente
+                                      .correo
+                                  }
+                                </small>
+                              </td>
+
+                              <td>
+                                {
+                                  reserva.funcion
+                                    .pelicula.titulo
+                                }
+                              </td>
+
+                              <td>
+                                {reserva.cantidad}
+                              </td>
+
+                              <td>
+                                $
+                                {reserva.total.toFixed(
+                                  2
+                                )}
+                              </td>
+
+                              <td>
+                                <span
+                                  className={
+                                    reserva.estado ===
+                                    "ACTIVA"
+                                      ? "estado-activo"
+                                      : "estado-cancelado"
                                   }
                                 >
-                                  Cancelar
-                                </button>
-                              ) : (
-                                "-"
-                              )}
-                            </td>
-                          </tr>
-                        ))}
+                                  {
+                                    reserva.estado
+                                  }
+                                </span>
+                              </td>
+
+                              <td>
+                                {reserva.estado ===
+                                "ACTIVA" ? (
+                                  <button
+                                    className="peligro"
+                                    onClick={() =>
+                                      manejarCancelarReserva(
+                                        reserva.id
+                                      )
+                                    }
+                                  >
+                                    Cancelar
+                                  </button>
+                                ) : (
+                                  "-"
+                                )}
+                              </td>
+
+                            </tr>
+                          )
+                        )}
                       </tbody>
+
                     </table>
                   </div>
                 )}
+
               </section>
             )}
 
-            {/* ================= ADMINISTRACIÓN ================= */}
+            {/* ============================================
+                ADMINISTRACIÓN
+                ============================================ */}
+
             {vista === "admin" && (
               <section>
-                <h2>Administración</h2>
+
+                <h2>
+                  Administración
+                </h2>
 
                 <div className="formularios-admin">
+
                   {/* REGISTRAR PELÍCULA */}
+
                   <form
                     className="formulario-card"
-                    onSubmit={manejarCrearPelicula}
+                    onSubmit={
+                      manejarCrearPelicula
+                    }
                   >
-                    <h3>Registrar película</h3>
+
+                    <h3>
+                      Registrar película
+                    </h3>
 
                     <input
                       placeholder="Título"
                       required
-                      value={peliculaForm.titulo}
+                      value={
+                        peliculaForm.titulo
+                      }
                       onChange={(e) =>
                         setPeliculaForm({
                           ...peliculaForm,
-                          titulo: e.target.value,
+                          titulo:
+                            e.target.value,
                         })
                       }
                     />
@@ -567,11 +933,14 @@ function App() {
                     <input
                       placeholder="Género"
                       required
-                      value={peliculaForm.genero}
+                      value={
+                        peliculaForm.genero
+                      }
                       onChange={(e) =>
                         setPeliculaForm({
                           ...peliculaForm,
-                          genero: e.target.value,
+                          genero:
+                            e.target.value,
                         })
                       }
                     />
@@ -581,11 +950,14 @@ function App() {
                       min="1"
                       placeholder="Duración en minutos"
                       required
-                      value={peliculaForm.duracion}
+                      value={
+                        peliculaForm.duracion
+                      }
                       onChange={(e) =>
                         setPeliculaForm({
                           ...peliculaForm,
-                          duracion: e.target.value,
+                          duracion:
+                            e.target.value,
                         })
                       }
                     />
@@ -593,22 +965,28 @@ function App() {
                     <input
                       placeholder="Clasificación"
                       required
-                      value={peliculaForm.clasificacion}
+                      value={
+                        peliculaForm.clasificacion
+                      }
                       onChange={(e) =>
                         setPeliculaForm({
                           ...peliculaForm,
-                          clasificacion: e.target.value,
+                          clasificacion:
+                            e.target.value,
                         })
                       }
                     />
 
                     <input
                       placeholder="URL de imagen (opcional)"
-                      value={peliculaForm.imagenUrl}
+                      value={
+                        peliculaForm.imagenUrl
+                      }
                       onChange={(e) =>
                         setPeliculaForm({
                           ...peliculaForm,
-                          imagenUrl: e.target.value,
+                          imagenUrl:
+                            e.target.value,
                         })
                       }
                     />
@@ -616,23 +994,31 @@ function App() {
                     <button type="submit">
                       Registrar película
                     </button>
+
                   </form>
 
                   {/* REGISTRAR SALA */}
+
                   <form
                     className="formulario-card"
                     onSubmit={manejarCrearSala}
                   >
-                    <h3>Registrar sala</h3>
+
+                    <h3>
+                      Registrar sala
+                    </h3>
 
                     <input
                       placeholder="Nombre de la sala"
                       required
-                      value={salaForm.nombre}
+                      value={
+                        salaForm.nombre
+                      }
                       onChange={(e) =>
                         setSalaForm({
                           ...salaForm,
-                          nombre: e.target.value,
+                          nombre:
+                            e.target.value,
                         })
                       }
                     />
@@ -642,11 +1028,14 @@ function App() {
                       min="1"
                       placeholder="Capacidad"
                       required
-                      value={salaForm.capacidad}
+                      value={
+                        salaForm.capacidad
+                      }
                       onChange={(e) =>
                         setSalaForm({
                           ...salaForm,
-                          capacidad: e.target.value,
+                          capacidad:
+                            e.target.value,
                         })
                       }
                     />
@@ -654,57 +1043,83 @@ function App() {
                     <button type="submit">
                       Registrar sala
                     </button>
+
                   </form>
 
                   {/* PROGRAMAR FUNCIÓN */}
+
                   <form
                     className="formulario-card"
-                    onSubmit={manejarCrearFuncion}
+                    onSubmit={
+                      manejarCrearFuncion
+                    }
                   >
-                    <h3>Programar función</h3>
+
+                    <h3>
+                      Programar función
+                    </h3>
 
                     <select
                       required
-                      value={funcionForm.peliculaId}
+                      value={
+                        funcionForm.peliculaId
+                      }
                       onChange={(e) =>
                         setFuncionForm({
                           ...funcionForm,
-                          peliculaId: e.target.value,
+                          peliculaId:
+                            e.target.value,
                         })
                       }
                     >
+
                       <option value="">
                         Seleccione película
                       </option>
 
                       {peliculas
-                        .filter((pelicula) => pelicula.activa)
+                        .filter(
+                          (pelicula) =>
+                            pelicula.activa
+                        )
                         .map((pelicula) => (
                           <option
                             key={pelicula.id}
-                            value={pelicula.id}
+                            value={
+                              pelicula.id
+                            }
                           >
-                            {pelicula.titulo}
+                            {
+                              pelicula.titulo
+                            }
                           </option>
                         ))}
+
                     </select>
 
                     <select
                       required
-                      value={funcionForm.salaId}
+                      value={
+                        funcionForm.salaId
+                      }
                       onChange={(e) =>
                         setFuncionForm({
                           ...funcionForm,
-                          salaId: e.target.value,
+                          salaId:
+                            e.target.value,
                         })
                       }
                     >
+
                       <option value="">
                         Seleccione sala
                       </option>
 
                       {salas
-                        .filter((sala) => sala.activa)
+                        .filter(
+                          (sala) =>
+                            sala.activa
+                        )
                         .map((sala) => (
                           <option
                             key={sala.id}
@@ -713,16 +1128,20 @@ function App() {
                             {sala.nombre}
                           </option>
                         ))}
+
                     </select>
 
                     <input
                       type="datetime-local"
                       required
-                      value={funcionForm.fechaHora}
+                      value={
+                        funcionForm.fechaHora
+                      }
                       onChange={(e) =>
                         setFuncionForm({
                           ...funcionForm,
-                          fechaHora: e.target.value,
+                          fechaHora:
+                            e.target.value,
                         })
                       }
                     />
@@ -733,11 +1152,14 @@ function App() {
                       min="0.01"
                       placeholder="Precio"
                       required
-                      value={funcionForm.precio}
+                      value={
+                        funcionForm.precio
+                      }
                       onChange={(e) =>
                         setFuncionForm({
                           ...funcionForm,
-                          precio: e.target.value,
+                          precio:
+                            e.target.value,
                         })
                       }
                     />
@@ -745,257 +1167,417 @@ function App() {
                     <button type="submit">
                       Programar función
                     </button>
+
                   </form>
+
                 </div>
 
-                {/* ================= LISTADOS ================= */}
+                {/* ========================================
+                    LISTADOS
+                    ======================================== */}
+
                 <div className="listados-admin">
+
                   {/* PELÍCULAS */}
+
                   <div className="lista-admin">
-                    <h3>Películas registradas</h3>
+
+                    <h3>
+                      Películas registradas
+                    </h3>
 
                     {peliculas.length === 0 ? (
                       <p className="estado">
-                        No existen películas registradas.
+                        No existen películas
+                        registradas.
                       </p>
                     ) : (
                       <div className="tabla-contenedor">
                         <table>
+
                           <thead>
                             <tr>
                               <th>Título</th>
                               <th>Género</th>
                               <th>Duración</th>
-                              <th>Clasificación</th>
+                              <th>
+                                Clasificación
+                              </th>
                               <th>Estado</th>
                               <th>Acción</th>
                             </tr>
                           </thead>
 
                           <tbody>
-                            {peliculas.map((pelicula) => (
-                              <tr key={pelicula.id}>
-                                <td>{pelicula.titulo}</td>
-                                <td>{pelicula.genero}</td>
-                                <td>{pelicula.duracion} min</td>
-                                <td>{pelicula.clasificacion}</td>
+                            {peliculas.map(
+                              (pelicula) => (
+                                <tr
+                                  key={
+                                    pelicula.id
+                                  }
+                                >
 
-                                <td>
-                                  <span
-                                    className={
-                                      pelicula.activa
-                                        ? "estado-activo"
-                                        : "estado-cancelado"
+                                  <td>
+                                    {
+                                      pelicula.titulo
                                     }
-                                  >
-                                    {pelicula.activa
-                                      ? "ACTIVA"
-                                      : "INACTIVA"}
-                                  </span>
-                                </td>
+                                  </td>
 
-                                <td>
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      abrirEdicionPelicula(pelicula)
+                                  <td>
+                                    {
+                                      pelicula.genero
                                     }
-                                  >
-                                    Editar
-                                  </button>
-                                </td>
-                              </tr>
-                            ))}
+                                  </td>
+
+                                  <td>
+                                    {
+                                      pelicula.duracion
+                                    }{" "}
+                                    min
+                                  </td>
+
+                                  <td>
+                                    {
+                                      pelicula.clasificacion
+                                    }
+                                  </td>
+
+                                  <td>
+                                    <span
+                                      className={
+                                        pelicula.activa
+                                          ? "estado-activo"
+                                          : "estado-cancelado"
+                                      }
+                                    >
+                                      {pelicula.activa
+                                        ? "ACTIVA"
+                                        : "INACTIVA"}
+                                    </span>
+                                  </td>
+
+                                  <td>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        abrirEdicionPelicula(
+                                          pelicula
+                                        )
+                                      }
+                                    >
+                                      Editar
+                                    </button>
+                                  </td>
+
+                                </tr>
+                              )
+                            )}
                           </tbody>
+
                         </table>
                       </div>
                     )}
+
                   </div>
 
                   {/* SALAS */}
+
                   <div className="lista-admin">
-                    <h3>Salas registradas</h3>
+
+                    <h3>
+                      Salas registradas
+                    </h3>
 
                     {salas.length === 0 ? (
                       <p className="estado">
-                        No existen salas registradas.
+                        No existen salas
+                        registradas.
                       </p>
                     ) : (
                       <div className="tabla-contenedor">
                         <table>
+
                           <thead>
                             <tr>
                               <th>Nombre</th>
-                              <th>Capacidad máxima</th>
+                              <th>
+                                Capacidad máxima
+                              </th>
                               <th>Estado</th>
                             </tr>
                           </thead>
 
                           <tbody>
-                            {salas.map((sala) => (
-                              <tr key={sala.id}>
-                                <td>{sala.nombre}</td>
-                                <td>{sala.capacidad}</td>
-                                <td>
-                                  <span
-                                    className={
-                                      sala.activa
-                                        ? "estado-activo"
-                                        : "estado-cancelado"
+                            {salas.map(
+                              (sala) => (
+                                <tr
+                                  key={sala.id}
+                                >
+
+                                  <td>
+                                    {sala.nombre}
+                                  </td>
+
+                                  <td>
+                                    {
+                                      sala.capacidad
                                     }
-                                  >
-                                    {sala.activa
-                                      ? "ACTIVA"
-                                      : "INACTIVA"}
-                                  </span>
-                                </td>
-                              </tr>
-                            ))}
+                                  </td>
+
+                                  <td>
+                                    <span
+                                      className={
+                                        sala.activa
+                                          ? "estado-activo"
+                                          : "estado-cancelado"
+                                      }
+                                    >
+                                      {sala.activa
+                                        ? "ACTIVA"
+                                        : "INACTIVA"}
+                                    </span>
+                                  </td>
+
+                                </tr>
+                              )
+                            )}
                           </tbody>
+
                         </table>
                       </div>
                     )}
+
                   </div>
 
                   {/* FUNCIONES */}
+
                   <div className="lista-admin">
-                    <h3>Funciones programadas</h3>
+
+                    <h3>
+                      Funciones programadas
+                    </h3>
 
                     {funciones.length === 0 ? (
                       <p className="estado">
-                        No existen funciones programadas.
+                        No existen funciones
+                        programadas.
                       </p>
                     ) : (
                       <div className="tabla-contenedor">
                         <table>
+
                           <thead>
                             <tr>
                               <th>Película</th>
                               <th>Sala</th>
-                              <th>Fecha y hora</th>
+                              <th>
+                                Fecha y hora
+                              </th>
                               <th>Precio</th>
-                              <th>Disponibles</th>
+                              <th>
+                                Disponibles
+                              </th>
                               <th>Estado</th>
                             </tr>
                           </thead>
 
                           <tbody>
-                            {funciones.map((funcion) => (
-                              <tr key={funcion.id}>
-                                <td>{funcion.pelicula.titulo}</td>
+                            {funciones.map(
+                              (funcion) => (
+                                <tr
+                                  key={
+                                    funcion.id
+                                  }
+                                >
 
-                                <td>{funcion.sala.nombre}</td>
-
-                                <td>
-                                  {new Date(
-                                    funcion.fechaHora
-                                  ).toLocaleString("es-EC")}
-                                </td>
-
-                                <td>
-                                  ${funcion.precio.toFixed(2)}
-                                </td>
-
-                                <td>{funcion.disponibles}</td>
-
-                                <td>
-                                  <span
-                                    className={
-                                      funcion.estado === "ACTIVA"
-                                        ? "estado-activo"
-                                        : "estado-cancelado"
+                                  <td>
+                                    {
+                                      funcion.pelicula
+                                        .titulo
                                     }
-                                  >
-                                    {funcion.estado}
-                                  </span>
-                                </td>
-                              </tr>
-                            ))}
+                                  </td>
+
+                                  <td>
+                                    {
+                                      funcion.sala
+                                        .nombre
+                                    }
+                                  </td>
+
+                                  <td>
+                                    {new Date(
+                                      funcion.fechaHora
+                                    ).toLocaleString(
+                                      "es-EC"
+                                    )}
+                                  </td>
+
+                                  <td>
+                                    $
+                                    {funcion.precio.toFixed(
+                                      2
+                                    )}
+                                  </td>
+
+                                  <td>
+                                    {
+                                      funcion.disponibles
+                                    }
+                                  </td>
+
+                                  <td>
+                                    <span
+                                      className={
+                                        funcion.estado ===
+                                        "ACTIVA"
+                                          ? "estado-activo"
+                                          : "estado-cancelado"
+                                      }
+                                    >
+                                      {
+                                        funcion.estado
+                                      }
+                                    </span>
+                                  </td>
+
+                                </tr>
+                              )
+                            )}
                           </tbody>
+
                         </table>
                       </div>
                     )}
+
                   </div>
+
                 </div>
 
-                {/* ================= MODAL EDITAR PELÍCULA ================= */}
+                {/* ========================================
+                    MODAL EDITAR PELÍCULA
+                    ======================================== */}
+
                 {peliculaEditando && (
                   <div className="modal-fondo">
-                    <div className="modal">
-                      <h2>Editar película</h2>
 
-                      <form onSubmit={manejarEditarPelicula}>
+                    <div className="modal">
+
+                      <h2>
+                        Editar película
+                      </h2>
+
+                      <form
+                        onSubmit={
+                          manejarEditarPelicula
+                        }
+                      >
+
                         <label>
                           Título
+
                           <input
                             type="text"
                             required
-                            value={edicionPeliculaForm.titulo}
+                            value={
+                              edicionPeliculaForm.titulo
+                            }
                             onChange={(e) =>
-                              setEdicionPeliculaForm({
-                                ...edicionPeliculaForm,
-                                titulo: e.target.value,
-                              })
+                              setEdicionPeliculaForm(
+                                {
+                                  ...edicionPeliculaForm,
+                                  titulo:
+                                    e.target
+                                      .value,
+                                }
+                              )
                             }
                           />
                         </label>
 
                         <label>
                           Género
+
                           <input
                             type="text"
                             required
-                            value={edicionPeliculaForm.genero}
+                            value={
+                              edicionPeliculaForm.genero
+                            }
                             onChange={(e) =>
-                              setEdicionPeliculaForm({
-                                ...edicionPeliculaForm,
-                                genero: e.target.value,
-                              })
+                              setEdicionPeliculaForm(
+                                {
+                                  ...edicionPeliculaForm,
+                                  genero:
+                                    e.target
+                                      .value,
+                                }
+                              )
                             }
                           />
                         </label>
 
                         <label>
                           Duración en minutos
+
                           <input
                             type="number"
                             min="1"
                             required
-                            value={edicionPeliculaForm.duracion}
+                            value={
+                              edicionPeliculaForm.duracion
+                            }
                             onChange={(e) =>
-                              setEdicionPeliculaForm({
-                                ...edicionPeliculaForm,
-                                duracion: e.target.value,
-                              })
+                              setEdicionPeliculaForm(
+                                {
+                                  ...edicionPeliculaForm,
+                                  duracion:
+                                    e.target
+                                      .value,
+                                }
+                              )
                             }
                           />
                         </label>
 
                         <label>
                           Clasificación
+
                           <input
                             type="text"
                             required
-                            value={edicionPeliculaForm.clasificacion}
+                            value={
+                              edicionPeliculaForm.clasificacion
+                            }
                             onChange={(e) =>
-                              setEdicionPeliculaForm({
-                                ...edicionPeliculaForm,
-                                clasificacion: e.target.value,
-                              })
+                              setEdicionPeliculaForm(
+                                {
+                                  ...edicionPeliculaForm,
+                                  clasificacion:
+                                    e.target
+                                      .value,
+                                }
+                              )
                             }
                           />
                         </label>
 
                         <label>
                           URL de imagen
+
                           <input
                             type="text"
-                            value={edicionPeliculaForm.imagenUrl}
+                            value={
+                              edicionPeliculaForm.imagenUrl
+                            }
                             onChange={(e) =>
-                              setEdicionPeliculaForm({
-                                ...edicionPeliculaForm,
-                                imagenUrl: e.target.value,
-                              })
+                              setEdicionPeliculaForm(
+                                {
+                                  ...edicionPeliculaForm,
+                                  imagenUrl:
+                                    e.target
+                                      .value,
+                                }
+                              )
                             }
                           />
                         </label>
@@ -1003,18 +1585,26 @@ function App() {
                         <label>
                           <input
                             type="checkbox"
-                            checked={edicionPeliculaForm.activa}
+                            checked={
+                              edicionPeliculaForm.activa
+                            }
                             onChange={(e) =>
-                              setEdicionPeliculaForm({
-                                ...edicionPeliculaForm,
-                                activa: e.target.checked,
-                              })
+                              setEdicionPeliculaForm(
+                                {
+                                  ...edicionPeliculaForm,
+                                  activa:
+                                    e.target
+                                      .checked,
+                                }
+                              )
                             }
                           />
+
                           Película activa
                         </label>
 
                         <div className="acciones">
+
                           <button type="submit">
                             Guardar cambios
                           </button>
@@ -1022,15 +1612,21 @@ function App() {
                           <button
                             type="button"
                             className="secundario"
-                            onClick={cerrarEdicionPelicula}
+                            onClick={
+                              cerrarEdicionPelicula
+                            }
                           >
                             Cancelar
                           </button>
+
                         </div>
+
                       </form>
+
                     </div>
                   </div>
                 )}
+
               </section>
             )}
           </>

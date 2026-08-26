@@ -1904,3 +1904,228 @@ button.peligro:hover {
     width: 100%;
   }
 }
+
+/* =========================================================
+   PANEL PROFESIONAL DE FILTROS
+   ========================================================= */
+
+.panel-filtros {
+  display: grid;
+
+  grid-template-columns:
+    minmax(260px, 2fr)
+    repeat(3, minmax(150px, 1fr));
+
+  gap: 14px;
+
+  margin-bottom: 14px;
+
+  padding: 18px;
+
+  border-radius: 14px;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(18, 23, 32, 0.95),
+      rgba(13, 17, 23, 0.95)
+    );
+
+  box-shadow:
+    0 12px 35px rgba(0, 0, 0, 0.2);
+}
+
+.filtro-grupo {
+  min-width: 0;
+}
+
+.filtro-grupo label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: #8f98a8;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.6px;
+
+  text-transform: uppercase;
+}
+
+.filtro-grupo select,
+.filtro-grupo input {
+  height: 44px;
+}
+
+.buscador-contenedor {
+  position: relative;
+}
+
+.buscador-contenedor input {
+  padding-left: 39px;
+}
+
+.buscador-icono {
+  position: absolute;
+
+  top: 50%;
+  left: 13px;
+
+  z-index: 2;
+
+  transform: translateY(-50%);
+
+  color: #6b7280;
+
+  font-size: 21px;
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   RESULTADOS DE FILTRADO
+   ========================================================= */
+
+.resumen-filtros {
+  min-height: 45px;
+
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 15px;
+
+  margin-bottom: 20px;
+}
+
+.resumen-filtros p {
+  margin: 0;
+
+  color: #8f98a8;
+
+  font-size: 13px;
+}
+
+.resumen-filtros strong {
+  color: white;
+}
+
+.btn-limpiar-filtros {
+  width: auto;
+
+  border: 1px solid rgba(255, 255, 255, 0.11);
+
+  border-radius: 8px;
+
+  padding: 8px 13px;
+
+  background: rgba(255, 255, 255, 0.04);
+
+  color: #cbd5e1;
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+.btn-limpiar-filtros:hover {
+  border-color: rgba(229, 9, 20, 0.4);
+
+  background: rgba(229, 9, 20, 0.1);
+
+  color: white;
+
+  transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   ESTADO VACÍO DE CARTELERA
+   ========================================================= */
+
+.estado-cartelera {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-height: 280px;
+}
+
+.estado-cartelera .estado-icono {
+  display: block;
+
+  margin-bottom: 10px;
+
+  font-size: 42px;
+
+  filter: grayscale(1);
+
+  opacity: 0.65;
+}
+
+.estado-cartelera h3 {
+  margin: 0 0 7px;
+
+  color: white;
+
+  font-size: 21px;
+}
+
+.estado-cartelera p {
+  margin: 0 0 18px;
+
+  color: #8f98a8;
+}
+
+
+/* =========================================================
+   RESPONSIVE DE FILTROS
+   ========================================================= */
+
+@media (max-width: 1050px) {
+
+  .panel-filtros {
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+  .filtro-busqueda {
+    grid-column:
+      1 / -1;
+  }
+}
+
+
+@media (max-width: 650px) {
+
+  .panel-filtros {
+    grid-template-columns: 1fr;
+
+    padding: 15px;
+  }
+
+  .filtro-busqueda {
+    grid-column: auto;
+  }
+
+  .resumen-filtros {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+  .btn-limpiar-filtros {
+    width: 100%;
+  }
+}

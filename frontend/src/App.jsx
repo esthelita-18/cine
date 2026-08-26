@@ -28,7 +28,14 @@ function App() {
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
 
+  /* ======================================================
+     FILTROS DE CARTELERA
+     ====================================================== */
+
+  const [busqueda, setBusqueda] = useState("");
   const [filtroPelicula, setFiltroPelicula] = useState("");
+  const [filtroGenero, setFiltroGenero] = useState("");
+  const [filtroFecha, setFiltroFecha] = useState("");
 
   const [funcionSeleccionada, setFuncionSeleccionada] =
     useState(null);
@@ -313,30 +320,126 @@ function App() {
   }
 
   /* ======================================================
-     CARTELERA
+     FUNCIONES AUXILIARES DE FILTRADO
+     ====================================================== */
+
+  function normalizarTexto(texto = "") {
+    return texto
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim();
+  }
+
+  function limpiarFiltros() {
+    setBusqueda("");
+    setFiltroPelicula("");
+    setFiltroGenero("");
+    setFiltroFecha("");
+  }
+
+  /* ======================================================
+     GÉNEROS DISPONIBLES
+
+     Se obtienen automáticamente de las películas.
+     No se escriben manualmente.
+     ====================================================== */
+
+  const generosDisponibles = [
+    ...new Set(
+      peliculas
+        .filter((pelicula) => pelicula.activa)
+        .map((pelicula) => pelicula.genero?.trim())
+        .filter(Boolean)
+    ),
+  ].sort((a, b) => a.localeCompare(b, "es"));
+
+  /* ======================================================
+     FECHAS PARA LOS FILTROS
+     ====================================================== */
+
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+
+  const manana = new Date(hoy);
+  manana.setDate(manana.getDate() + 1);
+
+  const pasadoManana = new Date(hoy);
+  pasadoManana.setDate(pasadoManana.getDate() + 2);
+
+  const finProximos7Dias = new Date(hoy);
+  finProximos7Dias.setDate(finProximos7Dias.getDate() + 7);
+
+  /* ======================================================
+     CARTELERA FILTRADA
      ====================================================== */
 
   const funcionesCartelera = funciones
     .filter((funcion) => {
-      const futura =
-        new Date(funcion.fechaHora) > new Date();
+      const fechaFuncion = new Date(funcion.fechaHora);
 
-      const activa =
+      /* La función debe ser futura */
+      const futura = fechaFuncion > new Date();
+
+      /* La función debe estar activa */
+      const funcionActiva =
         funcion.estado === "ACTIVA";
 
+      /* La película también debe estar activa */
       const peliculaActiva =
         funcion.pelicula.activa;
 
+      /* FILTRO POR PELÍCULA */
       const coincidePelicula =
         filtroPelicula === "" ||
         funcion.pelicula.id ===
           Number(filtroPelicula);
 
+      /* BÚSQUEDA POR TÍTULO */
+      const coincideBusqueda =
+        busqueda.trim() === "" ||
+        normalizarTexto(
+          funcion.pelicula.titulo
+        ).includes(
+          normalizarTexto(busqueda)
+        );
+
+      /* FILTRO POR GÉNERO */
+      const coincideGenero =
+        filtroGenero === "" ||
+        normalizarTexto(
+          funcion.pelicula.genero
+        ) === normalizarTexto(filtroGenero);
+
+      /* FILTRO POR FECHA */
+      let coincideFecha = true;
+
+      if (filtroFecha === "hoy") {
+        coincideFecha =
+          fechaFuncion >= hoy &&
+          fechaFuncion < manana;
+      }
+
+      if (filtroFecha === "manana") {
+        coincideFecha =
+          fechaFuncion >= manana &&
+          fechaFuncion < pasadoManana;
+      }
+
+      if (filtroFecha === "proximos7") {
+        coincideFecha =
+          fechaFuncion >= hoy &&
+          fechaFuncion < finProximos7Dias;
+      }
+
       return (
         futura &&
-        activa &&
+        funcionActiva &&
         peliculaActiva &&
-        coincidePelicula
+        coincidePelicula &&
+        coincideBusqueda &&
+        coincideGenero &&
+        coincideFecha
       );
     })
     .sort(
@@ -346,8 +449,17 @@ function App() {
     );
 
   /* ======================================================
+     SABER SI HAY FILTROS ACTIVOS
+     ====================================================== */
+
+  const hayFiltrosActivos =
+    busqueda.trim() !== "" ||
+    filtroPelicula !== "" ||
+    filtroGenero !== "" ||
+    filtroFecha !== "";
+
+  /* ======================================================
      PELÍCULA DESTACADA
-     La función futura más próxima se utiliza como Hero.
      ====================================================== */
 
   const funcionDestacada =
@@ -357,7 +469,7 @@ function App() {
 
   /* ======================================================
      TOTAL VISUAL DE LA RESERVA
-     El backend sigue siendo quien calcula el total real.
+     El backend sigue calculando el total real.
      ====================================================== */
 
   const totalVisual = funcionSeleccionada
@@ -367,6 +479,7 @@ function App() {
 
   return (
     <div className="app">
+
       {/* ==================================================
           ENCABEZADO
           ================================================== */}
@@ -423,6 +536,7 @@ function App() {
       </header>
 
       <main>
+
         <Mensaje
           tipo="exito"
           texto={mensaje}
@@ -439,6 +553,7 @@ function App() {
           </p>
         ) : (
           <>
+
             {/* ============================================
                 CARTELERA
                 ============================================ */}
@@ -557,8 +672,7 @@ function App() {
                         type="button"
                         className="hero-boton"
                         disabled={
-                          funcionDestacada.disponibles <=
-                          0
+                          funcionDestacada.disponibles <= 0
                         }
                         onClick={() =>
                           setFuncionSeleccionada(
@@ -566,8 +680,7 @@ function App() {
                           )
                         }
                       >
-                        {funcionDestacada.disponibles >
-                        0
+                        {funcionDestacada.disponibles > 0
                           ? "Reservar ahora"
                           : "Función agotada"}
                       </button>
@@ -577,7 +690,7 @@ function App() {
                 )}
 
                 {/* ========================================
-                    TÍTULO Y FILTRO
+                    ENCABEZADO DE CARTELERA
                     ======================================== */}
 
                 <div className="titulo-seccion">
@@ -586,49 +699,215 @@ function App() {
 
                     <p>
                       Explora nuestras funciones
-                      disponibles y reserva tus
-                      entradas.
+                      disponibles y reserva tus entradas.
                     </p>
                   </div>
+                </div>
 
-                  <select
-                    value={filtroPelicula}
-                    onChange={(e) =>
-                      setFiltroPelicula(
-                        e.target.value
-                      )
-                    }
-                  >
-                    <option value="">
-                      Todas las películas
-                    </option>
+                {/* ========================================
+                    PANEL DE BÚSQUEDA Y FILTROS
+                    ======================================== */}
 
-                    {peliculas
-                      .filter(
-                        (pelicula) =>
-                          pelicula.activa
-                      )
-                      .map((pelicula) => (
-                        <option
-                          key={pelicula.id}
-                          value={pelicula.id}
-                        >
-                          {pelicula.titulo}
-                        </option>
-                      ))}
-                  </select>
+                <div className="panel-filtros">
+
+                  {/* BÚSQUEDA */}
+
+                  <div className="filtro-grupo filtro-busqueda">
+
+                    <label htmlFor="buscar-pelicula">
+                      Buscar
+                    </label>
+
+                    <div className="buscador-contenedor">
+
+                      <span className="buscador-icono">
+                        ⌕
+                      </span>
+
+                      <input
+                        id="buscar-pelicula"
+                        type="search"
+                        placeholder="Buscar película..."
+                        value={busqueda}
+                        onChange={(e) =>
+                          setBusqueda(e.target.value)
+                        }
+                      />
+
+                    </div>
+
+                  </div>
+
+                  {/* PELÍCULA */}
+
+                  <div className="filtro-grupo">
+
+                    <label htmlFor="filtro-pelicula">
+                      Película
+                    </label>
+
+                    <select
+                      id="filtro-pelicula"
+                      value={filtroPelicula}
+                      onChange={(e) =>
+                        setFiltroPelicula(
+                          e.target.value
+                        )
+                      }
+                    >
+                      <option value="">
+                        Todas
+                      </option>
+
+                      {peliculas
+                        .filter(
+                          (pelicula) =>
+                            pelicula.activa
+                        )
+                        .map((pelicula) => (
+                          <option
+                            key={pelicula.id}
+                            value={pelicula.id}
+                          >
+                            {pelicula.titulo}
+                          </option>
+                        ))}
+
+                    </select>
+
+                  </div>
+
+                  {/* GÉNERO */}
+
+                  <div className="filtro-grupo">
+
+                    <label htmlFor="filtro-genero">
+                      Género
+                    </label>
+
+                    <select
+                      id="filtro-genero"
+                      value={filtroGenero}
+                      onChange={(e) =>
+                        setFiltroGenero(
+                          e.target.value
+                        )
+                      }
+                    >
+                      <option value="">
+                        Todos
+                      </option>
+
+                      {generosDisponibles.map(
+                        (genero) => (
+                          <option
+                            key={genero}
+                            value={genero}
+                          >
+                            {genero}
+                          </option>
+                        )
+                      )}
+
+                    </select>
+
+                  </div>
+
+                  {/* FECHA */}
+
+                  <div className="filtro-grupo">
+
+                    <label htmlFor="filtro-fecha">
+                      Fecha
+                    </label>
+
+                    <select
+                      id="filtro-fecha"
+                      value={filtroFecha}
+                      onChange={(e) =>
+                        setFiltroFecha(
+                          e.target.value
+                        )
+                      }
+                    >
+                      <option value="">
+                        Todas las fechas
+                      </option>
+
+                      <option value="hoy">
+                        Hoy
+                      </option>
+
+                      <option value="manana">
+                        Mañana
+                      </option>
+
+                      <option value="proximos7">
+                        Próximos 7 días
+                      </option>
+
+                    </select>
+
+                  </div>
+
+                </div>
+
+                {/* ========================================
+                    RESUMEN DE RESULTADOS
+                    ======================================== */}
+
+                <div className="resumen-filtros">
+
+                  <p>
+                    <strong>
+                      {funcionesCartelera.length}
+                    </strong>{" "}
+                    {funcionesCartelera.length === 1
+                      ? "función encontrada"
+                      : "funciones encontradas"}
+                  </p>
+
+                  {hayFiltrosActivos && (
+                    <button
+                      type="button"
+                      className="btn-limpiar-filtros"
+                      onClick={limpiarFiltros}
+                    >
+                      Limpiar filtros
+                    </button>
+                  )}
+
                 </div>
 
                 {/* ========================================
                     TARJETAS
                     ======================================== */}
 
-                {funcionesCartelera.length ===
-                0 ? (
-                  <p className="estado">
-                    No existen funciones
-                    disponibles.
-                  </p>
+                {funcionesCartelera.length === 0 ? (
+                  <div className="estado estado-cartelera">
+                    <span className="estado-icono">
+                      🎬
+                    </span>
+
+                    <h3>
+                      No encontramos funciones
+                    </h3>
+
+                    <p>
+                      Prueba cambiando los filtros o
+                      realizando otra búsqueda.
+                    </p>
+
+                    {hayFiltrosActivos && (
+                      <button
+                        type="button"
+                        className="btn-limpiar-filtros"
+                        onClick={limpiarFiltros}
+                      >
+                        Mostrar toda la cartelera
+                      </button>
+                    )}
+                  </div>
                 ) : (
                   <div className="grid">
                     {funcionesCartelera.map(
@@ -651,6 +930,7 @@ function App() {
 
                 {funcionSeleccionada && (
                   <div className="modal-fondo">
+
                     <div className="modal">
 
                       <h2>
@@ -766,11 +1046,14 @@ function App() {
                           </button>
 
                         </div>
+
                       </form>
 
                     </div>
+
                   </div>
                 )}
+
               </section>
             )}
 
@@ -787,11 +1070,11 @@ function App() {
 
                 {reservas.length === 0 ? (
                   <p className="estado">
-                    No existen reservas
-                    registradas.
+                    No existen reservas registradas.
                   </p>
                 ) : (
                   <div className="tabla-contenedor">
+
                     <table>
 
                       <thead>
@@ -806,6 +1089,7 @@ function App() {
                       </thead>
 
                       <tbody>
+
                         {reservas.map(
                           (reserva) => (
                             <tr key={reserva.id}>
@@ -853,9 +1137,7 @@ function App() {
                                       : "estado-cancelado"
                                   }
                                 >
-                                  {
-                                    reserva.estado
-                                  }
+                                  {reserva.estado}
                                 </span>
                               </td>
 
@@ -880,9 +1162,11 @@ function App() {
                             </tr>
                           )
                         )}
+
                       </tbody>
 
                     </table>
+
                   </div>
                 )}
 
@@ -1072,7 +1356,6 @@ function App() {
                         })
                       }
                     >
-
                       <option value="">
                         Seleccione película
                       </option>
@@ -1085,13 +1368,9 @@ function App() {
                         .map((pelicula) => (
                           <option
                             key={pelicula.id}
-                            value={
-                              pelicula.id
-                            }
+                            value={pelicula.id}
                           >
-                            {
-                              pelicula.titulo
-                            }
+                            {pelicula.titulo}
                           </option>
                         ))}
 
@@ -1110,7 +1389,6 @@ function App() {
                         })
                       }
                     >
-
                       <option value="">
                         Seleccione sala
                       </option>
@@ -1193,6 +1471,7 @@ function App() {
                       </p>
                     ) : (
                       <div className="tabla-contenedor">
+
                         <table>
 
                           <thead>
@@ -1209,6 +1488,7 @@ function App() {
                           </thead>
 
                           <tbody>
+
                             {peliculas.map(
                               (pelicula) => (
                                 <tr
@@ -1272,9 +1552,11 @@ function App() {
                                 </tr>
                               )
                             )}
+
                           </tbody>
 
                         </table>
+
                       </div>
                     )}
 
@@ -1290,11 +1572,11 @@ function App() {
 
                     {salas.length === 0 ? (
                       <p className="estado">
-                        No existen salas
-                        registradas.
+                        No existen salas registradas.
                       </p>
                     ) : (
                       <div className="tabla-contenedor">
+
                         <table>
 
                           <thead>
@@ -1308,6 +1590,7 @@ function App() {
                           </thead>
 
                           <tbody>
+
                             {salas.map(
                               (sala) => (
                                 <tr
@@ -1341,9 +1624,11 @@ function App() {
                                 </tr>
                               )
                             )}
+
                           </tbody>
 
                         </table>
+
                       </div>
                     )}
 
@@ -1364,6 +1649,7 @@ function App() {
                       </p>
                     ) : (
                       <div className="tabla-contenedor">
+
                         <table>
 
                           <thead>
@@ -1382,6 +1668,7 @@ function App() {
                           </thead>
 
                           <tbody>
+
                             {funciones.map(
                               (funcion) => (
                                 <tr
@@ -1434,18 +1721,18 @@ function App() {
                                           : "estado-cancelado"
                                       }
                                     >
-                                      {
-                                        funcion.estado
-                                      }
+                                      {funcion.estado}
                                     </span>
                                   </td>
 
                                 </tr>
                               )
                             )}
+
                           </tbody>
 
                         </table>
+
                       </div>
                     )}
 
@@ -1486,8 +1773,7 @@ function App() {
                                 {
                                   ...edicionPeliculaForm,
                                   titulo:
-                                    e.target
-                                      .value,
+                                    e.target.value,
                                 }
                               )
                             }
@@ -1508,8 +1794,7 @@ function App() {
                                 {
                                   ...edicionPeliculaForm,
                                   genero:
-                                    e.target
-                                      .value,
+                                    e.target.value,
                                 }
                               )
                             }
@@ -1531,8 +1816,7 @@ function App() {
                                 {
                                   ...edicionPeliculaForm,
                                   duracion:
-                                    e.target
-                                      .value,
+                                    e.target.value,
                                 }
                               )
                             }
@@ -1553,8 +1837,7 @@ function App() {
                                 {
                                   ...edicionPeliculaForm,
                                   clasificacion:
-                                    e.target
-                                      .value,
+                                    e.target.value,
                                 }
                               )
                             }
@@ -1574,8 +1857,7 @@ function App() {
                                 {
                                   ...edicionPeliculaForm,
                                   imagenUrl:
-                                    e.target
-                                      .value,
+                                    e.target.value,
                                 }
                               )
                             }
@@ -1583,6 +1865,7 @@ function App() {
                         </label>
 
                         <label>
+
                           <input
                             type="checkbox"
                             checked={
@@ -1593,14 +1876,14 @@ function App() {
                                 {
                                   ...edicionPeliculaForm,
                                   activa:
-                                    e.target
-                                      .checked,
+                                    e.target.checked,
                                 }
                               )
                             }
                           />
 
                           Película activa
+
                         </label>
 
                         <div className="acciones">
@@ -1624,14 +1907,18 @@ function App() {
                       </form>
 
                     </div>
+
                   </div>
                 )}
 
               </section>
             )}
+
           </>
         )}
+
       </main>
+
     </div>
   );
 }

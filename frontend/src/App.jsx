@@ -37,6 +37,10 @@ function App() {
   const [filtroGenero, setFiltroGenero] = useState("");
   const [filtroFecha, setFiltroFecha] = useState("");
 
+  /* ======================================================
+     RESERVA
+     ====================================================== */
+
   const [funcionSeleccionada, setFuncionSeleccionada] =
     useState(null);
 
@@ -46,6 +50,10 @@ function App() {
     cantidad: 1,
   });
 
+  /* ======================================================
+     PELÍCULAS
+     ====================================================== */
+
   const [peliculaForm, setPeliculaForm] = useState({
     titulo: "",
     genero: "",
@@ -53,10 +61,6 @@ function App() {
     clasificacion: "",
     imagenUrl: "",
   });
-
-  /* ======================================================
-     ESTADOS PARA EDITAR UNA PELÍCULA
-     ====================================================== */
 
   const [peliculaEditando, setPeliculaEditando] =
     useState(null);
@@ -71,10 +75,18 @@ function App() {
       activa: true,
     });
 
+  /* ======================================================
+     SALAS
+     ====================================================== */
+
   const [salaForm, setSalaForm] = useState({
     nombre: "",
     capacidad: "",
   });
+
+  /* ======================================================
+     FUNCIONES
+     ====================================================== */
 
   const [funcionForm, setFuncionForm] = useState({
     peliculaId: "",
@@ -84,7 +96,7 @@ function App() {
   });
 
   /* ======================================================
-     CARGA GENERAL DE DATOS
+     CARGAR DATOS
      ====================================================== */
 
   async function cargarDatos() {
@@ -132,7 +144,7 @@ function App() {
   }
 
   /* ======================================================
-     RESERVAS
+     CREAR RESERVA
      ====================================================== */
 
   async function manejarReserva(e) {
@@ -168,13 +180,65 @@ function App() {
     }
   }
 
+  /* ======================================================
+     CERRAR MODAL DE RESERVA
+     ====================================================== */
+
+  function cerrarModalReserva() {
+    setFuncionSeleccionada(null);
+
+    setReservaForm((formActual) => ({
+      ...formActual,
+      cantidad: 1,
+    }));
+  }
+
+  /* ======================================================
+     CAMBIAR CANTIDAD DE ENTRADAS
+     ====================================================== */
+
+  function cambiarCantidadReserva(cambio) {
+    if (!funcionSeleccionada) {
+      return;
+    }
+
+    const cantidadActual =
+      Number(reservaForm.cantidad) || 1;
+
+    const maximo =
+      Number(funcionSeleccionada.disponibles) || 0;
+
+    if (maximo <= 0) {
+      return;
+    }
+
+    const nuevaCantidad = Math.max(
+      1,
+      Math.min(
+        maximo,
+        cantidadActual + cambio
+      )
+    );
+
+    setReservaForm({
+      ...reservaForm,
+      cantidad: nuevaCantidad,
+    });
+  }
+
+  /* ======================================================
+     CANCELAR RESERVA
+     ====================================================== */
+
   async function manejarCancelarReserva(id) {
     try {
       setError("");
 
       await cancelarReserva(id);
 
-      mostrarMensaje("Reserva cancelada correctamente.");
+      mostrarMensaje(
+        "Reserva cancelada correctamente."
+      );
 
       await cargarDatos();
     } catch (err) {
@@ -194,10 +258,14 @@ function App() {
 
       await crearPelicula({
         ...peliculaForm,
-        duracion: Number(peliculaForm.duracion),
+        duracion: Number(
+          peliculaForm.duracion
+        ),
       });
 
-      mostrarMensaje("Película registrada correctamente.");
+      mostrarMensaje(
+        "Película registrada correctamente."
+      );
 
       setPeliculaForm({
         titulo: "",
@@ -225,10 +293,14 @@ function App() {
 
       await crearSala({
         nombre: salaForm.nombre,
-        capacidad: Number(salaForm.capacidad),
+        capacidad: Number(
+          salaForm.capacidad
+        ),
       });
 
-      mostrarMensaje("Sala registrada correctamente.");
+      mostrarMensaje(
+        "Sala registrada correctamente."
+      );
 
       setSalaForm({
         nombre: "",
@@ -252,13 +324,22 @@ function App() {
       setError("");
 
       await crearFuncion({
-        peliculaId: Number(funcionForm.peliculaId),
-        salaId: Number(funcionForm.salaId),
-        fechaHora: funcionForm.fechaHora,
-        precio: Number(funcionForm.precio),
+        peliculaId: Number(
+          funcionForm.peliculaId
+        ),
+        salaId: Number(
+          funcionForm.salaId
+        ),
+        fechaHora:
+          funcionForm.fechaHora,
+        precio: Number(
+          funcionForm.precio
+        ),
       });
 
-      mostrarMensaje("Función programada correctamente.");
+      mostrarMensaje(
+        "Función programada correctamente."
+      );
 
       setFuncionForm({
         peliculaId: "",
@@ -274,7 +355,7 @@ function App() {
   }
 
   /* ======================================================
-     EDICIÓN DE PELÍCULAS
+     EDITAR PELÍCULA
      ====================================================== */
 
   function abrirEdicionPelicula(pelicula) {
@@ -284,8 +365,10 @@ function App() {
       titulo: pelicula.titulo,
       genero: pelicula.genero,
       duracion: pelicula.duracion,
-      clasificacion: pelicula.clasificacion,
-      imagenUrl: pelicula.imagenUrl || "",
+      clasificacion:
+        pelicula.clasificacion,
+      imagenUrl:
+        pelicula.imagenUrl || "",
       activa: pelicula.activa,
     });
   }
@@ -304,12 +387,19 @@ function App() {
     try {
       setError("");
 
-      await actualizarPelicula(peliculaEditando.id, {
-        ...edicionPeliculaForm,
-        duracion: Number(edicionPeliculaForm.duracion),
-      });
+      await actualizarPelicula(
+        peliculaEditando.id,
+        {
+          ...edicionPeliculaForm,
+          duracion: Number(
+            edicionPeliculaForm.duracion
+          ),
+        }
+      );
 
-      mostrarMensaje("Película actualizada correctamente.");
+      mostrarMensaje(
+        "Película actualizada correctamente."
+      );
 
       setPeliculaEditando(null);
 
@@ -320,16 +410,23 @@ function App() {
   }
 
   /* ======================================================
-     FUNCIONES AUXILIARES DE FILTRADO
+     NORMALIZAR TEXTO
      ====================================================== */
 
   function normalizarTexto(texto = "") {
     return texto
       .toLowerCase()
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
+      .replace(
+        /[\u0300-\u036f]/g,
+        ""
+      )
       .trim();
   }
+
+  /* ======================================================
+     LIMPIAR FILTROS
+     ====================================================== */
 
   function limpiarFiltros() {
     setBusqueda("");
@@ -340,35 +437,52 @@ function App() {
 
   /* ======================================================
      GÉNEROS DISPONIBLES
-
-     Se obtienen automáticamente de las películas.
-     No se escriben manualmente.
      ====================================================== */
 
   const generosDisponibles = [
     ...new Set(
       peliculas
-        .filter((pelicula) => pelicula.activa)
-        .map((pelicula) => pelicula.genero?.trim())
+        .filter(
+          (pelicula) =>
+            pelicula.activa
+        )
+        .map(
+          (pelicula) =>
+            pelicula.genero?.trim()
+        )
         .filter(Boolean)
     ),
-  ].sort((a, b) => a.localeCompare(b, "es"));
+  ].sort((a, b) =>
+    a.localeCompare(b, "es")
+  );
 
   /* ======================================================
-     FECHAS PARA LOS FILTROS
+     FECHAS PARA FILTROS
      ====================================================== */
 
   const hoy = new Date();
+
   hoy.setHours(0, 0, 0, 0);
 
   const manana = new Date(hoy);
-  manana.setDate(manana.getDate() + 1);
 
-  const pasadoManana = new Date(hoy);
-  pasadoManana.setDate(pasadoManana.getDate() + 2);
+  manana.setDate(
+    manana.getDate() + 1
+  );
 
-  const finProximos7Dias = new Date(hoy);
-  finProximos7Dias.setDate(finProximos7Dias.getDate() + 7);
+  const pasadoManana =
+    new Date(hoy);
+
+  pasadoManana.setDate(
+    pasadoManana.getDate() + 2
+  );
+
+  const finProximos7Dias =
+    new Date(hoy);
+
+  finProximos7Dias.setDate(
+    finProximos7Dias.getDate() + 7
+  );
 
   /* ======================================================
      CARTELERA FILTRADA
@@ -376,26 +490,23 @@ function App() {
 
   const funcionesCartelera = funciones
     .filter((funcion) => {
-      const fechaFuncion = new Date(funcion.fechaHora);
+      const fechaFuncion =
+        new Date(funcion.fechaHora);
 
-      /* La función debe ser futura */
-      const futura = fechaFuncion > new Date();
+      const futura =
+        fechaFuncion > new Date();
 
-      /* La función debe estar activa */
       const funcionActiva =
         funcion.estado === "ACTIVA";
 
-      /* La película también debe estar activa */
       const peliculaActiva =
         funcion.pelicula.activa;
 
-      /* FILTRO POR PELÍCULA */
       const coincidePelicula =
         filtroPelicula === "" ||
         funcion.pelicula.id ===
           Number(filtroPelicula);
 
-      /* BÚSQUEDA POR TÍTULO */
       const coincideBusqueda =
         busqueda.trim() === "" ||
         normalizarTexto(
@@ -404,32 +515,42 @@ function App() {
           normalizarTexto(busqueda)
         );
 
-      /* FILTRO POR GÉNERO */
       const coincideGenero =
         filtroGenero === "" ||
         normalizarTexto(
           funcion.pelicula.genero
-        ) === normalizarTexto(filtroGenero);
+        ) ===
+          normalizarTexto(
+            filtroGenero
+          );
 
-      /* FILTRO POR FECHA */
       let coincideFecha = true;
 
-      if (filtroFecha === "hoy") {
+      if (
+        filtroFecha === "hoy"
+      ) {
         coincideFecha =
           fechaFuncion >= hoy &&
           fechaFuncion < manana;
       }
 
-      if (filtroFecha === "manana") {
+      if (
+        filtroFecha === "manana"
+      ) {
         coincideFecha =
           fechaFuncion >= manana &&
-          fechaFuncion < pasadoManana;
+          fechaFuncion <
+            pasadoManana;
       }
 
-      if (filtroFecha === "proximos7") {
+      if (
+        filtroFecha ===
+        "proximos7"
+      ) {
         coincideFecha =
           fechaFuncion >= hoy &&
-          fechaFuncion < finProximos7Dias;
+          fechaFuncion <
+            finProximos7Dias;
       }
 
       return (
@@ -449,7 +570,7 @@ function App() {
     );
 
   /* ======================================================
-     SABER SI HAY FILTROS ACTIVOS
+     FILTROS ACTIVOS
      ====================================================== */
 
   const hayFiltrosActivos =
@@ -459,7 +580,7 @@ function App() {
     filtroFecha !== "";
 
   /* ======================================================
-     PELÍCULA DESTACADA
+     FUNCIÓN DESTACADA
      ====================================================== */
 
   const funcionDestacada =
@@ -468,14 +589,16 @@ function App() {
       : null;
 
   /* ======================================================
-     TOTAL VISUAL DE LA RESERVA
-     El backend sigue calculando el total real.
+     TOTAL VISUAL
      ====================================================== */
 
-  const totalVisual = funcionSeleccionada
-    ? Number(reservaForm.cantidad || 0) *
-      funcionSeleccionada.precio
-    : 0;
+  const totalVisual =
+    funcionSeleccionada
+      ? Number(
+          reservaForm.cantidad || 0
+        ) *
+        funcionSeleccionada.precio
+      : 0;
 
   return (
     <div className="app">
@@ -489,7 +612,8 @@ function App() {
           <h1>Cine Reservas</h1>
 
           <p>
-            Sistema de gestión y reserva de funciones
+            Sistema de gestión y
+            reserva de funciones
           </p>
         </div>
 
@@ -554,23 +678,23 @@ function App() {
         ) : (
           <>
 
-            {/* ============================================
+            {/* ==================================================
                 CARTELERA
-                ============================================ */}
+                ================================================== */}
 
-            {vista === "cartelera" && (
+            {vista ===
+              "cartelera" && (
               <section>
 
-                {/* ========================================
-                    HERO CINEMATOGRÁFICO
-                    ======================================== */}
+                {/* HERO */}
 
                 {funcionDestacada && (
                   <div
                     className="hero-cine"
                     style={{
                       backgroundImage:
-                        funcionDestacada.pelicula
+                        funcionDestacada
+                          .pelicula
                           .imagenUrl
                           ? `url("${funcionDestacada.pelicula.imagenUrl}")`
                           : "none",
@@ -586,7 +710,8 @@ function App() {
 
                       <h2>
                         {
-                          funcionDestacada.pelicula
+                          funcionDestacada
+                            .pelicula
                             .titulo
                         }
                       </h2>
@@ -595,7 +720,8 @@ function App() {
 
                         <span>
                           {
-                            funcionDestacada.pelicula
+                            funcionDestacada
+                              .pelicula
                               .genero
                           }
                         </span>
@@ -604,7 +730,8 @@ function App() {
 
                         <span>
                           {
-                            funcionDestacada.pelicula
+                            funcionDestacada
+                              .pelicula
                               .duracion
                           }{" "}
                           min
@@ -614,7 +741,8 @@ function App() {
 
                         <span>
                           {
-                            funcionDestacada.pelicula
+                            funcionDestacada
+                              .pelicula
                               .clasificacion
                           }
                         </span>
@@ -624,15 +752,19 @@ function App() {
                       <p className="hero-proxima">
                         Próxima función:{" "}
                         {new Date(
-                          funcionDestacada.fechaHora
+                          funcionDestacada
+                            .fechaHora
                         ).toLocaleString(
                           "es-EC",
                           {
-                            weekday: "long",
+                            weekday:
+                              "long",
                             day: "2-digit",
-                            month: "long",
+                            month:
+                              "long",
                             hour: "2-digit",
-                            minute: "2-digit",
+                            minute:
+                              "2-digit",
                           }
                         )}
                       </p>
@@ -641,8 +773,8 @@ function App() {
 
                         <span>
                           {
-                            funcionDestacada.sala
-                              .nombre
+                            funcionDestacada
+                              .sala.nombre
                           }
                         </span>
 
@@ -650,7 +782,8 @@ function App() {
 
                         <span>
                           {
-                            funcionDestacada.disponibles
+                            funcionDestacada
+                              .disponibles
                           }{" "}
                           lugares disponibles
                         </span>
@@ -672,7 +805,8 @@ function App() {
                         type="button"
                         className="hero-boton"
                         disabled={
-                          funcionDestacada.disponibles <= 0
+                          funcionDestacada.disponibles <=
+                          0
                         }
                         onClick={() =>
                           setFuncionSeleccionada(
@@ -680,7 +814,8 @@ function App() {
                           )
                         }
                       >
-                        {funcionDestacada.disponibles > 0
+                        {funcionDestacada.disponibles >
+                        0
                           ? "Reservar ahora"
                           : "Función agotada"}
                       </button>
@@ -689,28 +824,25 @@ function App() {
                   </div>
                 )}
 
-                {/* ========================================
-                    ENCABEZADO DE CARTELERA
-                    ======================================== */}
+                {/* TÍTULO */}
 
                 <div className="titulo-seccion">
                   <div>
-                    <h2>Cartelera</h2>
+                    <h2>
+                      Cartelera
+                    </h2>
 
                     <p>
-                      Explora nuestras funciones
-                      disponibles y reserva tus entradas.
+                      Explora nuestras
+                      funciones disponibles
+                      y reserva tus entradas.
                     </p>
                   </div>
                 </div>
 
-                {/* ========================================
-                    PANEL DE BÚSQUEDA Y FILTROS
-                    ======================================== */}
+                {/* FILTROS */}
 
                 <div className="panel-filtros">
-
-                  {/* BÚSQUEDA */}
 
                   <div className="filtro-grupo filtro-busqueda">
 
@@ -730,15 +862,14 @@ function App() {
                         placeholder="Buscar película..."
                         value={busqueda}
                         onChange={(e) =>
-                          setBusqueda(e.target.value)
+                          setBusqueda(
+                            e.target.value
+                          )
                         }
                       />
 
                     </div>
-
                   </div>
-
-                  {/* PELÍCULA */}
 
                   <div className="filtro-grupo">
 
@@ -748,7 +879,9 @@ function App() {
 
                     <select
                       id="filtro-pelicula"
-                      value={filtroPelicula}
+                      value={
+                        filtroPelicula
+                      }
                       onChange={(e) =>
                         setFiltroPelicula(
                           e.target.value
@@ -764,20 +897,26 @@ function App() {
                           (pelicula) =>
                             pelicula.activa
                         )
-                        .map((pelicula) => (
-                          <option
-                            key={pelicula.id}
-                            value={pelicula.id}
-                          >
-                            {pelicula.titulo}
-                          </option>
-                        ))}
+                        .map(
+                          (pelicula) => (
+                            <option
+                              key={
+                                pelicula.id
+                              }
+                              value={
+                                pelicula.id
+                              }
+                            >
+                              {
+                                pelicula.titulo
+                              }
+                            </option>
+                          )
+                        )}
 
                     </select>
 
                   </div>
-
-                  {/* GÉNERO */}
 
                   <div className="filtro-grupo">
 
@@ -787,7 +926,9 @@ function App() {
 
                     <select
                       id="filtro-genero"
-                      value={filtroGenero}
+                      value={
+                        filtroGenero
+                      }
                       onChange={(e) =>
                         setFiltroGenero(
                           e.target.value
@@ -813,8 +954,6 @@ function App() {
 
                   </div>
 
-                  {/* FECHA */}
-
                   <div className="filtro-grupo">
 
                     <label htmlFor="filtro-fecha">
@@ -823,7 +962,9 @@ function App() {
 
                     <select
                       id="filtro-fecha"
-                      value={filtroFecha}
+                      value={
+                        filtroFecha
+                      }
                       onChange={(e) =>
                         setFiltroFecha(
                           e.target.value
@@ -852,17 +993,18 @@ function App() {
 
                 </div>
 
-                {/* ========================================
-                    RESUMEN DE RESULTADOS
-                    ======================================== */}
+                {/* CONTADOR */}
 
                 <div className="resumen-filtros">
 
                   <p>
                     <strong>
-                      {funcionesCartelera.length}
+                      {
+                        funcionesCartelera.length
+                      }
                     </strong>{" "}
-                    {funcionesCartelera.length === 1
+                    {funcionesCartelera.length ===
+                    1
                       ? "función encontrada"
                       : "funciones encontradas"}
                   </p>
@@ -871,7 +1013,9 @@ function App() {
                     <button
                       type="button"
                       className="btn-limpiar-filtros"
-                      onClick={limpiarFiltros}
+                      onClick={
+                        limpiarFiltros
+                      }
                     >
                       Limpiar filtros
                     </button>
@@ -879,170 +1023,383 @@ function App() {
 
                 </div>
 
-                {/* ========================================
-                    TARJETAS
-                    ======================================== */}
+                {/* TARJETAS */}
 
-                {funcionesCartelera.length === 0 ? (
+                {funcionesCartelera.length ===
+                0 ? (
                   <div className="estado estado-cartelera">
+
                     <span className="estado-icono">
                       🎬
                     </span>
 
                     <h3>
-                      No encontramos funciones
+                      No encontramos
+                      funciones
                     </h3>
 
                     <p>
-                      Prueba cambiando los filtros o
-                      realizando otra búsqueda.
+                      Prueba cambiando los
+                      filtros o realizando
+                      otra búsqueda.
                     </p>
 
                     {hayFiltrosActivos && (
                       <button
                         type="button"
                         className="btn-limpiar-filtros"
-                        onClick={limpiarFiltros}
+                        onClick={
+                          limpiarFiltros
+                        }
                       >
-                        Mostrar toda la cartelera
+                        Mostrar toda la
+                        cartelera
                       </button>
                     )}
+
                   </div>
                 ) : (
                   <div className="grid">
+
                     {funcionesCartelera.map(
                       (funcion) => (
                         <FuncionCard
-                          key={funcion.id}
-                          funcion={funcion}
+                          key={
+                            funcion.id
+                          }
+                          funcion={
+                            funcion
+                          }
                           onReservar={
                             setFuncionSeleccionada
                           }
                         />
                       )
                     )}
+
                   </div>
                 )}
 
-                {/* ========================================
-                    MODAL DE RESERVA
-                    ======================================== */}
+                {/* ==================================================
+                    MODAL PROFESIONAL DE RESERVA
+                    ================================================== */}
 
                 {funcionSeleccionada && (
                   <div className="modal-fondo">
 
-                    <div className="modal">
+                    <div className="modal modal-reserva">
 
-                      <h2>
-                        Realizar reserva
-                      </h2>
+                      {/* ENCABEZADO */}
 
-                      <p>
-                        <strong>
-                          {
-                            funcionSeleccionada
-                              .pelicula.titulo
+                      <div className="reserva-modal-header">
+
+                        <div>
+
+                          <span className="reserva-modal-etiqueta">
+                            Reserva de entradas
+                          </span>
+
+                          <h2>
+                            {
+                              funcionSeleccionada
+                                .pelicula
+                                .titulo
+                            }
+                          </h2>
+
+                          <p className="reserva-modal-meta">
+                            {
+                              funcionSeleccionada
+                                .pelicula
+                                .genero
+                            }
+                            {" • "}
+                            {
+                              funcionSeleccionada
+                                .pelicula
+                                .duracion
+                            }{" "}
+                            min
+                            {" • "}
+                            {
+                              funcionSeleccionada
+                                .pelicula
+                                .clasificacion
+                            }
+                          </p>
+
+                        </div>
+
+                        <button
+                          type="button"
+                          className="modal-cerrar"
+                          onClick={
+                            cerrarModalReserva
                           }
-                        </strong>
-                      </p>
+                          aria-label="Cerrar reserva"
+                        >
+                          ×
+                        </button>
 
-                      <p>
-                        {
-                          funcionSeleccionada
-                            .sala.nombre
-                        }{" "}
-                        - $
-                        {funcionSeleccionada.precio.toFixed(
-                          2
-                        )}
-                      </p>
+                      </div>
+
+                      {/* INFORMACIÓN DE FUNCIÓN */}
+
+                      <div className="reserva-funcion-resumen">
+
+                        <div className="reserva-funcion-dato">
+
+                          <span>
+                            Fecha
+                          </span>
+
+                          <strong>
+                            {new Date(
+                              funcionSeleccionada.fechaHora
+                            ).toLocaleDateString(
+                              "es-EC",
+                              {
+                                weekday:
+                                  "long",
+                                day: "2-digit",
+                                month:
+                                  "long",
+                              }
+                            )}
+                          </strong>
+
+                        </div>
+
+                        <div className="reserva-funcion-dato">
+
+                          <span>
+                            Hora
+                          </span>
+
+                          <strong>
+                            {new Date(
+                              funcionSeleccionada.fechaHora
+                            ).toLocaleTimeString(
+                              "es-EC",
+                              {
+                                hour: "2-digit",
+                                minute:
+                                  "2-digit",
+                              }
+                            )}
+                          </strong>
+
+                        </div>
+
+                        <div className="reserva-funcion-dato">
+
+                          <span>
+                            Sala
+                          </span>
+
+                          <strong>
+                            {
+                              funcionSeleccionada
+                                .sala
+                                .nombre
+                            }
+                          </strong>
+
+                        </div>
+
+                      </div>
+
+                      {/* FORMULARIO */}
 
                       <form
-                        onSubmit={manejarReserva}
+                        onSubmit={
+                          manejarReserva
+                        }
                       >
 
-                        <label>
-                          Nombre
+                        <div className="reserva-campos">
 
-                          <input
-                            type="text"
-                            required
-                            value={
-                              reservaForm.nombre
-                            }
-                            onChange={(e) =>
-                              setReservaForm({
-                                ...reservaForm,
-                                nombre:
-                                  e.target.value,
-                              })
-                            }
-                          />
-                        </label>
+                          <label>
+                            Nombre completo
 
-                        <label>
-                          Correo
+                            <input
+                              type="text"
+                              required
+                              placeholder="Ej. María López"
+                              value={
+                                reservaForm.nombre
+                              }
+                              onChange={(e) =>
+                                setReservaForm({
+                                  ...reservaForm,
+                                  nombre:
+                                    e.target.value,
+                                })
+                              }
+                            />
 
-                          <input
-                            type="email"
-                            required
-                            value={
-                              reservaForm.correo
-                            }
-                            onChange={(e) =>
-                              setReservaForm({
-                                ...reservaForm,
-                                correo:
-                                  e.target.value,
-                              })
-                            }
-                          />
-                        </label>
+                          </label>
 
-                        <label>
-                          Cantidad
+                          <label>
+                            Correo electrónico
 
-                          <input
-                            type="number"
-                            min="1"
-                            max={
-                              funcionSeleccionada.disponibles
-                            }
-                            required
-                            value={
-                              reservaForm.cantidad
-                            }
-                            onChange={(e) =>
-                              setReservaForm({
-                                ...reservaForm,
-                                cantidad:
-                                  e.target.value,
-                              })
-                            }
-                          />
-                        </label>
+                            <input
+                              type="email"
+                              required
+                              placeholder="correo@ejemplo.com"
+                              value={
+                                reservaForm.correo
+                              }
+                              onChange={(e) =>
+                                setReservaForm({
+                                  ...reservaForm,
+                                  correo:
+                                    e.target.value,
+                                })
+                              }
+                            />
 
-                        <p className="total">
-                          Total estimado: $
-                          {totalVisual.toFixed(2)}
-                        </p>
+                          </label>
 
-                        <div className="acciones">
+                        </div>
 
-                          <button type="submit">
+                        {/* CANTIDAD */}
+
+                        <div className="cantidad-seccion">
+
+                          <div>
+
+                            <span className="cantidad-titulo">
+                              Entradas
+                            </span>
+
+                            <p>
+                              {
+                                funcionSeleccionada.disponibles
+                              }{" "}
+                              lugares disponibles
+                            </p>
+
+                          </div>
+
+                          <div className="cantidad-selector">
+
+                            <button
+                              type="button"
+                              className="cantidad-btn"
+                              aria-label="Disminuir cantidad"
+                              disabled={
+                                Number(
+                                  reservaForm.cantidad
+                                ) <= 1
+                              }
+                              onClick={() =>
+                                cambiarCantidadReserva(
+                                  -1
+                                )
+                              }
+                            >
+                              −
+                            </button>
+
+                            <span className="cantidad-valor">
+                              {
+                                reservaForm.cantidad
+                              }
+                            </span>
+
+                            <button
+                              type="button"
+                              className="cantidad-btn"
+                              aria-label="Aumentar cantidad"
+                              disabled={
+                                Number(
+                                  reservaForm.cantidad
+                                ) >=
+                                funcionSeleccionada.disponibles
+                              }
+                              onClick={() =>
+                                cambiarCantidadReserva(
+                                  1
+                                )
+                              }
+                            >
+                              +
+                            </button>
+
+                          </div>
+
+                        </div>
+
+                        {/* RESUMEN */}
+
+                        <div className="reserva-resumen">
+
+                          <div className="reserva-resumen-fila">
+
+                            <span>
+                              Precio por entrada
+                            </span>
+
+                            <strong>
+                              $
+                              {funcionSeleccionada.precio.toFixed(
+                                2
+                              )}
+                            </strong>
+
+                          </div>
+
+                          <div className="reserva-resumen-fila">
+
+                            <span>
+                              Cantidad
+                            </span>
+
+                            <strong>
+                              {
+                                reservaForm.cantidad
+                              }
+                            </strong>
+
+                          </div>
+
+                          <div className="reserva-resumen-total">
+
+                            <span>
+                              Total estimado
+                            </span>
+
+                            <strong>
+                              $
+                              {totalVisual.toFixed(
+                                2
+                              )}
+                            </strong>
+
+                          </div>
+
+                        </div>
+
+                        {/* ACCIONES */}
+
+                        <div className="reserva-acciones">
+
+                          <button
+                            type="submit"
+                            className="btn-confirmar-reserva"
+                          >
                             Confirmar reserva
                           </button>
 
                           <button
                             type="button"
-                            className="secundario"
-                            onClick={() =>
-                              setFuncionSeleccionada(
-                                null
-                              )
+                            className="btn-cancelar-reserva"
+                            onClick={
+                              cerrarModalReserva
                             }
                           >
-                            Cerrar
+                            Cancelar
                           </button>
 
                         </div>
@@ -1057,9 +1414,9 @@ function App() {
               </section>
             )}
 
-            {/* ============================================
+            {/* ==================================================
                 RESERVAS
-                ============================================ */}
+                ================================================== */}
 
             {vista === "reservas" && (
               <section>
@@ -1070,7 +1427,8 @@ function App() {
 
                 {reservas.length === 0 ? (
                   <p className="estado">
-                    No existen reservas registradas.
+                    No existen reservas
+                    registradas.
                   </p>
                 ) : (
                   <div className="tabla-contenedor">
@@ -1079,12 +1437,24 @@ function App() {
 
                       <thead>
                         <tr>
-                          <th>Cliente</th>
-                          <th>Película</th>
-                          <th>Entradas</th>
-                          <th>Total</th>
-                          <th>Estado</th>
-                          <th>Acción</th>
+                          <th>
+                            Cliente
+                          </th>
+                          <th>
+                            Película
+                          </th>
+                          <th>
+                            Entradas
+                          </th>
+                          <th>
+                            Total
+                          </th>
+                          <th>
+                            Estado
+                          </th>
+                          <th>
+                            Acción
+                          </th>
                         </tr>
                       </thead>
 
@@ -1092,11 +1462,16 @@ function App() {
 
                         {reservas.map(
                           (reserva) => (
-                            <tr key={reserva.id}>
+                            <tr
+                              key={
+                                reserva.id
+                              }
+                            >
 
                               <td>
                                 {
-                                  reserva.cliente
+                                  reserva
+                                    .cliente
                                     .nombre
                                 }
 
@@ -1104,7 +1479,8 @@ function App() {
 
                                 <small>
                                   {
-                                    reserva.cliente
+                                    reserva
+                                      .cliente
                                       .correo
                                   }
                                 </small>
@@ -1112,13 +1488,17 @@ function App() {
 
                               <td>
                                 {
-                                  reserva.funcion
-                                    .pelicula.titulo
+                                  reserva
+                                    .funcion
+                                    .pelicula
+                                    .titulo
                                 }
                               </td>
 
                               <td>
-                                {reserva.cantidad}
+                                {
+                                  reserva.cantidad
+                                }
                               </td>
 
                               <td>
@@ -1137,7 +1517,9 @@ function App() {
                                       : "estado-cancelado"
                                   }
                                 >
-                                  {reserva.estado}
+                                  {
+                                    reserva.estado
+                                  }
                                 </span>
                               </td>
 
@@ -1173,9 +1555,9 @@ function App() {
               </section>
             )}
 
-            {/* ============================================
+            {/* ==================================================
                 ADMINISTRACIÓN
-                ============================================ */}
+                ================================================== */}
 
             {vista === "admin" && (
               <section>
@@ -1285,7 +1667,9 @@ function App() {
 
                   <form
                     className="formulario-card"
-                    onSubmit={manejarCrearSala}
+                    onSubmit={
+                      manejarCrearSala
+                    }
                   >
 
                     <h3>
@@ -1365,14 +1749,22 @@ function App() {
                           (pelicula) =>
                             pelicula.activa
                         )
-                        .map((pelicula) => (
-                          <option
-                            key={pelicula.id}
-                            value={pelicula.id}
-                          >
-                            {pelicula.titulo}
-                          </option>
-                        ))}
+                        .map(
+                          (pelicula) => (
+                            <option
+                              key={
+                                pelicula.id
+                              }
+                              value={
+                                pelicula.id
+                              }
+                            >
+                              {
+                                pelicula.titulo
+                              }
+                            </option>
+                          )
+                        )}
 
                     </select>
 
@@ -1398,14 +1790,22 @@ function App() {
                           (sala) =>
                             sala.activa
                         )
-                        .map((sala) => (
-                          <option
-                            key={sala.id}
-                            value={sala.id}
-                          >
-                            {sala.nombre}
-                          </option>
-                        ))}
+                        .map(
+                          (sala) => (
+                            <option
+                              key={
+                                sala.id
+                              }
+                              value={
+                                sala.id
+                              }
+                            >
+                              {
+                                sala.nombre
+                              }
+                            </option>
+                          )
+                        )}
 
                     </select>
 
@@ -1450,9 +1850,7 @@ function App() {
 
                 </div>
 
-                {/* ========================================
-                    LISTADOS
-                    ======================================== */}
+                {/* LISTADOS */}
 
                 <div className="listados-admin">
 
@@ -1464,7 +1862,8 @@ function App() {
                       Películas registradas
                     </h3>
 
-                    {peliculas.length === 0 ? (
+                    {peliculas.length ===
+                    0 ? (
                       <p className="estado">
                         No existen películas
                         registradas.
@@ -1476,21 +1875,33 @@ function App() {
 
                           <thead>
                             <tr>
-                              <th>Título</th>
-                              <th>Género</th>
-                              <th>Duración</th>
+                              <th>
+                                Título
+                              </th>
+                              <th>
+                                Género
+                              </th>
+                              <th>
+                                Duración
+                              </th>
                               <th>
                                 Clasificación
                               </th>
-                              <th>Estado</th>
-                              <th>Acción</th>
+                              <th>
+                                Estado
+                              </th>
+                              <th>
+                                Acción
+                              </th>
                             </tr>
                           </thead>
 
                           <tbody>
 
                             {peliculas.map(
-                              (pelicula) => (
+                              (
+                                pelicula
+                              ) => (
                                 <tr
                                   key={
                                     pelicula.id
@@ -1572,7 +1983,8 @@ function App() {
 
                     {salas.length === 0 ? (
                       <p className="estado">
-                        No existen salas registradas.
+                        No existen salas
+                        registradas.
                       </p>
                     ) : (
                       <div className="tabla-contenedor">
@@ -1581,11 +1993,15 @@ function App() {
 
                           <thead>
                             <tr>
-                              <th>Nombre</th>
+                              <th>
+                                Nombre
+                              </th>
                               <th>
                                 Capacidad máxima
                               </th>
-                              <th>Estado</th>
+                              <th>
+                                Estado
+                              </th>
                             </tr>
                           </thead>
 
@@ -1594,11 +2010,15 @@ function App() {
                             {salas.map(
                               (sala) => (
                                 <tr
-                                  key={sala.id}
+                                  key={
+                                    sala.id
+                                  }
                                 >
 
                                   <td>
-                                    {sala.nombre}
+                                    {
+                                      sala.nombre
+                                    }
                                   </td>
 
                                   <td>
@@ -1642,7 +2062,8 @@ function App() {
                       Funciones programadas
                     </h3>
 
-                    {funciones.length === 0 ? (
+                    {funciones.length ===
+                    0 ? (
                       <p className="estado">
                         No existen funciones
                         programadas.
@@ -1654,23 +2075,33 @@ function App() {
 
                           <thead>
                             <tr>
-                              <th>Película</th>
-                              <th>Sala</th>
+                              <th>
+                                Película
+                              </th>
+                              <th>
+                                Sala
+                              </th>
                               <th>
                                 Fecha y hora
                               </th>
-                              <th>Precio</th>
+                              <th>
+                                Precio
+                              </th>
                               <th>
                                 Disponibles
                               </th>
-                              <th>Estado</th>
+                              <th>
+                                Estado
+                              </th>
                             </tr>
                           </thead>
 
                           <tbody>
 
                             {funciones.map(
-                              (funcion) => (
+                              (
+                                funcion
+                              ) => (
                                 <tr
                                   key={
                                     funcion.id
@@ -1679,14 +2110,16 @@ function App() {
 
                                   <td>
                                     {
-                                      funcion.pelicula
+                                      funcion
+                                        .pelicula
                                         .titulo
                                     }
                                   </td>
 
                                   <td>
                                     {
-                                      funcion.sala
+                                      funcion
+                                        .sala
                                         .nombre
                                     }
                                   </td>
@@ -1721,7 +2154,9 @@ function App() {
                                           : "estado-cancelado"
                                       }
                                     >
-                                      {funcion.estado}
+                                      {
+                                        funcion.estado
+                                      }
                                     </span>
                                   </td>
 
@@ -1740,9 +2175,9 @@ function App() {
 
                 </div>
 
-                {/* ========================================
+                {/* ==================================================
                     MODAL EDITAR PELÍCULA
-                    ======================================== */}
+                    ================================================== */}
 
                 {peliculaEditando && (
                   <div className="modal-fondo">
@@ -1769,15 +2204,14 @@ function App() {
                               edicionPeliculaForm.titulo
                             }
                             onChange={(e) =>
-                              setEdicionPeliculaForm(
-                                {
-                                  ...edicionPeliculaForm,
-                                  titulo:
-                                    e.target.value,
-                                }
-                              )
+                              setEdicionPeliculaForm({
+                                ...edicionPeliculaForm,
+                                titulo:
+                                  e.target.value,
+                              })
                             }
                           />
+
                         </label>
 
                         <label>
@@ -1790,15 +2224,14 @@ function App() {
                               edicionPeliculaForm.genero
                             }
                             onChange={(e) =>
-                              setEdicionPeliculaForm(
-                                {
-                                  ...edicionPeliculaForm,
-                                  genero:
-                                    e.target.value,
-                                }
-                              )
+                              setEdicionPeliculaForm({
+                                ...edicionPeliculaForm,
+                                genero:
+                                  e.target.value,
+                              })
                             }
                           />
+
                         </label>
 
                         <label>
@@ -1812,15 +2245,14 @@ function App() {
                               edicionPeliculaForm.duracion
                             }
                             onChange={(e) =>
-                              setEdicionPeliculaForm(
-                                {
-                                  ...edicionPeliculaForm,
-                                  duracion:
-                                    e.target.value,
-                                }
-                              )
+                              setEdicionPeliculaForm({
+                                ...edicionPeliculaForm,
+                                duracion:
+                                  e.target.value,
+                              })
                             }
                           />
+
                         </label>
 
                         <label>
@@ -1833,15 +2265,14 @@ function App() {
                               edicionPeliculaForm.clasificacion
                             }
                             onChange={(e) =>
-                              setEdicionPeliculaForm(
-                                {
-                                  ...edicionPeliculaForm,
-                                  clasificacion:
-                                    e.target.value,
-                                }
-                              )
+                              setEdicionPeliculaForm({
+                                ...edicionPeliculaForm,
+                                clasificacion:
+                                  e.target.value,
+                              })
                             }
                           />
+
                         </label>
 
                         <label>
@@ -1853,15 +2284,14 @@ function App() {
                               edicionPeliculaForm.imagenUrl
                             }
                             onChange={(e) =>
-                              setEdicionPeliculaForm(
-                                {
-                                  ...edicionPeliculaForm,
-                                  imagenUrl:
-                                    e.target.value,
-                                }
-                              )
+                              setEdicionPeliculaForm({
+                                ...edicionPeliculaForm,
+                                imagenUrl:
+                                  e.target.value,
+                              })
                             }
                           />
+
                         </label>
 
                         <label>
@@ -1872,13 +2302,11 @@ function App() {
                               edicionPeliculaForm.activa
                             }
                             onChange={(e) =>
-                              setEdicionPeliculaForm(
-                                {
-                                  ...edicionPeliculaForm,
-                                  activa:
-                                    e.target.checked,
-                                }
-                              )
+                              setEdicionPeliculaForm({
+                                ...edicionPeliculaForm,
+                                activa:
+                                  e.target.checked,
+                              })
                             }
                           />
 

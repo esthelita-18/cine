@@ -61,6 +61,7 @@ function App() {
   const [filtroPelicula, setFiltroPelicula] = useState("");
   const [filtroGenero, setFiltroGenero] = useState("");
   const [filtroFecha, setFiltroFecha] = useState("");
+  const [filtroFechaExacta, setFiltroFechaExacta] = useState("");
 
   /* ======================================================
      FILTROS DEL HISTORIAL DE RESERVAS
@@ -499,6 +500,7 @@ function App() {
     setFiltroPelicula("");
     setFiltroGenero("");
     setFiltroFecha("");
+    setFiltroFechaExacta("");
   }
 
   /* ======================================================
@@ -549,6 +551,12 @@ function App() {
   finProximos7Dias.setDate(
     finProximos7Dias.getDate() + 7
   );
+
+  const fechaMinimaCalendario = [
+    hoy.getFullYear(),
+    String(hoy.getMonth() + 1).padStart(2, "0"),
+    String(hoy.getDate()).padStart(2, "0"),
+  ].join("-");
 
   /* ======================================================
      CARTELERA FILTRADA
@@ -619,6 +627,39 @@ function App() {
             finProximos7Dias;
       }
 
+      if (filtroFechaExacta) {
+        const [anio, mes, dia] =
+          filtroFechaExacta
+            .split("-")
+            .map(Number);
+
+        const inicioFechaExacta =
+          new Date(
+            anio,
+            mes - 1,
+            dia,
+            0,
+            0,
+            0,
+            0
+          );
+
+        const finFechaExacta =
+          new Date(
+            anio,
+            mes - 1,
+            dia + 1,
+            0,
+            0,
+            0,
+            0
+          );
+
+        coincideFecha =
+          fechaFuncion >= inicioFechaExacta &&
+          fechaFuncion < finFechaExacta;
+      }
+
       return (
         futura &&
         funcionActiva &&
@@ -668,7 +709,8 @@ function App() {
     busqueda.trim() !== "" ||
     filtroPelicula !== "" ||
     filtroGenero !== "" ||
-    filtroFecha !== "";
+    filtroFecha !== "" ||
+    filtroFechaExacta !== "";
 
   /* ======================================================
      HISTORIAL DE RESERVAS
@@ -1127,19 +1169,22 @@ function App() {
                   <div className="filtro-grupo">
 
                     <label htmlFor="filtro-fecha">
-                      Fecha
+                      Rango
                     </label>
 
                     <select
                       id="filtro-fecha"
-                      value={
-                        filtroFecha
-                      }
-                      onChange={(e) =>
-                        setFiltroFecha(
-                          e.target.value
-                        )
-                      }
+                      value={filtroFecha}
+                      onChange={(e) => {
+                        const valor =
+                          e.target.value;
+
+                        setFiltroFecha(valor);
+
+                        if (valor) {
+                          setFiltroFechaExacta("");
+                        }
+                      }}
                     >
                       <option value="">
                         Todas las fechas
@@ -1158,6 +1203,31 @@ function App() {
                       </option>
 
                     </select>
+
+                  </div>
+
+                  <div className="filtro-grupo filtro-fecha-exacta">
+
+                    <label htmlFor="filtro-fecha-exacta">
+                      Fecha exacta
+                    </label>
+
+                    <input
+                      id="filtro-fecha-exacta"
+                      type="date"
+                      min={fechaMinimaCalendario}
+                      value={filtroFechaExacta}
+                      onChange={(e) => {
+                        const valor =
+                          e.target.value;
+
+                        setFiltroFechaExacta(valor);
+
+                        if (valor) {
+                          setFiltroFecha("");
+                        }
+                      }}
+                    />
 
                   </div>
 

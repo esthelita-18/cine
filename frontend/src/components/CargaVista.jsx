@@ -31,7 +31,7 @@ function SkeletonCartelera() {
       </div>
 
       <div className="skeleton-filtros">
-        {[1, 2, 3, 4].map((item) => (
+        {[1, 2, 3, 4, 5].map((item) => (
           <div
             key={item}
             className="skeleton-filtro"

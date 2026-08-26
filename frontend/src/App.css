@@ -1913,8 +1913,8 @@ button.peligro:hover {
   display: grid;
 
   grid-template-columns:
-    minmax(260px, 2fr)
-    repeat(3, minmax(150px, 1fr));
+    minmax(240px, 1.6fr)
+    repeat(4, minmax(130px, 1fr));
 
   gap: 14px;
 
@@ -3646,8 +3646,8 @@ button.peligro:hover {
   display: grid;
 
   grid-template-columns:
-    minmax(220px, 2fr)
-    repeat(3, minmax(150px, 1fr));
+    minmax(220px, 1.6fr)
+    repeat(4, minmax(125px, 1fr));
 
   gap: 14px;
 
@@ -4769,3 +4769,36 @@ img {
     text-align: left;
   }
 }
+
+
+/* =========================================================
+   FILTRO DE FECHA EXACTA
+   ========================================================= */
+
+.filtro-fecha-exacta input[type="date"] {
+  cursor: pointer;
+  color-scheme: dark;
+}
+
+.filtro-fecha-exacta input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.75;
+  filter: invert(1);
+}
+
+.filtro-fecha-exacta input[type="date"]:hover::-webkit-calendar-picker-indicator {
+  opacity: 1;
+}
+
+@media (max-width: 1050px) {
+  .filtro-fecha-exacta {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 650px) {
+  .filtro-fecha-exacta {
+    grid-column: auto;
+  }
+}
+

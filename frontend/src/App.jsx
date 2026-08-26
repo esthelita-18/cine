@@ -13,6 +13,7 @@ import {
   crearFuncion,
   crearReserva,
   cancelarReserva,
+  actualizarPelicula,
 } from "./services/api";
 
 function App() {
@@ -43,6 +44,18 @@ function App() {
     duracion: "",
     clasificacion: "",
     imagenUrl: "",
+  });
+
+  /* ESTADOS PARA EDITAR UNA PELÍCULA */
+  const [peliculaEditando, setPeliculaEditando] = useState(null);
+
+  const [edicionPeliculaForm, setEdicionPeliculaForm] = useState({
+    titulo: "",
+    genero: "",
+    duracion: "",
+    clasificacion: "",
+    imagenUrl: "",
+    activa: true,
   });
 
   const [salaForm, setSalaForm] = useState({
@@ -223,6 +236,50 @@ function App() {
     }
   }
 
+  /* ================= EDICIÓN DE PELÍCULAS ================= */
+
+  function abrirEdicionPelicula(pelicula) {
+    setPeliculaEditando(pelicula);
+
+    setEdicionPeliculaForm({
+      titulo: pelicula.titulo,
+      genero: pelicula.genero,
+      duracion: pelicula.duracion,
+      clasificacion: pelicula.clasificacion,
+      imagenUrl: pelicula.imagenUrl || "",
+      activa: pelicula.activa,
+    });
+  }
+
+  function cerrarEdicionPelicula() {
+    setPeliculaEditando(null);
+  }
+
+  async function manejarEditarPelicula(e) {
+    e.preventDefault();
+
+    if (!peliculaEditando) {
+      return;
+    }
+
+    try {
+      setError("");
+
+      await actualizarPelicula(peliculaEditando.id, {
+        ...edicionPeliculaForm,
+        duracion: Number(edicionPeliculaForm.duracion),
+      });
+
+      mostrarMensaje("Película actualizada correctamente.");
+
+      setPeliculaEditando(null);
+
+      await cargarDatos();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
   const funcionesCartelera = funciones.filter((funcion) => {
     const futura = new Date(funcion.fechaHora) > new Date();
     const activa = funcion.estado === "ACTIVA";
@@ -278,7 +335,7 @@ function App() {
           <p className="estado">Cargando información...</p>
         ) : (
           <>
-            {/* CARTELERA */}
+            {/* ================= CARTELERA ================= */}
             {vista === "cartelera" && (
               <section>
                 <div className="titulo-seccion">
@@ -409,7 +466,7 @@ function App() {
               </section>
             )}
 
-            {/* RESERVAS */}
+            {/* ================= RESERVAS ================= */}
             {vista === "reservas" && (
               <section>
                 <h2>Historial de reservas</h2>
@@ -482,7 +539,7 @@ function App() {
               </section>
             )}
 
-            {/* ADMINISTRACIÓN */}
+            {/* ================= ADMINISTRACIÓN ================= */}
             {vista === "admin" && (
               <section>
                 <h2>Administración</h2>
@@ -691,7 +748,7 @@ function App() {
                   </form>
                 </div>
 
-                {/* LISTADOS */}
+                {/* ================= LISTADOS ================= */}
                 <div className="listados-admin">
                   {/* PELÍCULAS */}
                   <div className="lista-admin">
@@ -711,6 +768,7 @@ function App() {
                               <th>Duración</th>
                               <th>Clasificación</th>
                               <th>Estado</th>
+                              <th>Acción</th>
                             </tr>
                           </thead>
 
@@ -721,6 +779,7 @@ function App() {
                                 <td>{pelicula.genero}</td>
                                 <td>{pelicula.duracion} min</td>
                                 <td>{pelicula.clasificacion}</td>
+
                                 <td>
                                   <span
                                     className={
@@ -733,6 +792,17 @@ function App() {
                                       ? "ACTIVA"
                                       : "INACTIVA"}
                                   </span>
+                                </td>
+
+                                <td>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      abrirEdicionPelicula(pelicula)
+                                    }
+                                  >
+                                    Editar
+                                  </button>
                                 </td>
                               </tr>
                             ))}
@@ -847,6 +917,120 @@ function App() {
                     )}
                   </div>
                 </div>
+
+                {/* ================= MODAL EDITAR PELÍCULA ================= */}
+                {peliculaEditando && (
+                  <div className="modal-fondo">
+                    <div className="modal">
+                      <h2>Editar película</h2>
+
+                      <form onSubmit={manejarEditarPelicula}>
+                        <label>
+                          Título
+                          <input
+                            type="text"
+                            required
+                            value={edicionPeliculaForm.titulo}
+                            onChange={(e) =>
+                              setEdicionPeliculaForm({
+                                ...edicionPeliculaForm,
+                                titulo: e.target.value,
+                              })
+                            }
+                          />
+                        </label>
+
+                        <label>
+                          Género
+                          <input
+                            type="text"
+                            required
+                            value={edicionPeliculaForm.genero}
+                            onChange={(e) =>
+                              setEdicionPeliculaForm({
+                                ...edicionPeliculaForm,
+                                genero: e.target.value,
+                              })
+                            }
+                          />
+                        </label>
+
+                        <label>
+                          Duración en minutos
+                          <input
+                            type="number"
+                            min="1"
+                            required
+                            value={edicionPeliculaForm.duracion}
+                            onChange={(e) =>
+                              setEdicionPeliculaForm({
+                                ...edicionPeliculaForm,
+                                duracion: e.target.value,
+                              })
+                            }
+                          />
+                        </label>
+
+                        <label>
+                          Clasificación
+                          <input
+                            type="text"
+                            required
+                            value={edicionPeliculaForm.clasificacion}
+                            onChange={(e) =>
+                              setEdicionPeliculaForm({
+                                ...edicionPeliculaForm,
+                                clasificacion: e.target.value,
+                              })
+                            }
+                          />
+                        </label>
+
+                        <label>
+                          URL de imagen
+                          <input
+                            type="text"
+                            value={edicionPeliculaForm.imagenUrl}
+                            onChange={(e) =>
+                              setEdicionPeliculaForm({
+                                ...edicionPeliculaForm,
+                                imagenUrl: e.target.value,
+                              })
+                            }
+                          />
+                        </label>
+
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={edicionPeliculaForm.activa}
+                            onChange={(e) =>
+                              setEdicionPeliculaForm({
+                                ...edicionPeliculaForm,
+                                activa: e.target.checked,
+                              })
+                            }
+                          />
+                          Película activa
+                        </label>
+
+                        <div className="acciones">
+                          <button type="submit">
+                            Guardar cambios
+                          </button>
+
+                          <button
+                            type="button"
+                            className="secundario"
+                            onClick={cerrarEdicionPelicula}
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
               </section>
             )}
           </>

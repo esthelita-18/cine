@@ -296,3 +296,25 @@ button.peligro {
 .lista-admin h3 {
   margin-top: 0;
 }
+
+.poster-pelicula {
+  width: 100%;
+  height: 320px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  background: #e5e7eb;
+}
+
+.poster-sin-imagen {
+  width: 100%;
+  height: 320px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-weight: bold;
+}

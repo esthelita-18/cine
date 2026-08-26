@@ -8,64 +8,161 @@ function FuncionCard({ funcion, onReservar }) {
     funcion.pelicula.imagenUrl.trim() !== "" &&
     !errorImagen;
 
+  const fechaFuncion = new Date(funcion.fechaHora);
+
+  const fecha = fechaFuncion.toLocaleDateString("es-EC", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+  });
+
+  const hora = fechaFuncion.toLocaleTimeString("es-EC", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const capacidad = funcion.sala.capacidad || 0;
+  const disponibles = funcion.disponibles || 0;
+
+  const porcentajeDisponible =
+    capacidad > 0
+      ? Math.max(
+          0,
+          Math.min(100, (disponibles / capacidad) * 100)
+        )
+      : 0;
+
+  let textoDisponibilidad = `${disponibles} disponibles`;
+  let tipoDisponibilidad = "disponible";
+
+  if (disponibles <= 0) {
+    textoDisponibilidad = "Agotado";
+    tipoDisponibilidad = "agotado";
+  } else if (disponibles <= 5) {
+    textoDisponibilidad = `Últimos ${disponibles}`;
+    tipoDisponibilidad = "ultimos";
+  }
+
   return (
-    <article className="tarjeta">
-      {tieneImagen ? (
-        <img
-          className="poster-pelicula"
-          src={funcion.pelicula.imagenUrl}
-          alt={`Portada de ${funcion.pelicula.titulo}`}
-          onError={() => setErrorImagen(true)}
-        />
-      ) : (
-        <div className="poster-sin-imagen">
-          Sin imagen
+    <article className="tarjeta pelicula-card">
+      {/* POSTER */}
+      <div className="poster-contenedor">
+        {tieneImagen ? (
+          <img
+            className="poster-pelicula"
+            src={funcion.pelicula.imagenUrl}
+            alt={`Portada de ${funcion.pelicula.titulo}`}
+            onError={() => setErrorImagen(true)}
+          />
+        ) : (
+          <div className="poster-sin-imagen">
+            <div className="sin-imagen-contenido">
+              <span className="icono-cine">🎬</span>
+              <span>Sin imagen disponible</span>
+            </div>
+          </div>
+        )}
+
+        <div className="poster-overlay" />
+
+        <span className="badge-clasificacion">
+          {funcion.pelicula.clasificacion}
+        </span>
+
+        <span
+          className={`badge-disponibilidad ${tipoDisponibilidad}`}
+        >
+          {textoDisponibilidad}
+        </span>
+      </div>
+
+      {/* INFORMACIÓN */}
+      <div className="pelicula-contenido">
+        <div className="pelicula-encabezado">
+          <div>
+            <h3>{funcion.pelicula.titulo}</h3>
+
+            <p className="pelicula-meta">
+              {funcion.pelicula.genero}
+              <span>•</span>
+              {funcion.pelicula.duracion} min
+            </p>
+          </div>
         </div>
-      )}
 
-      <h3>{funcion.pelicula.titulo}</h3>
+        {/* INFORMACIÓN DE LA FUNCIÓN */}
+        <div className="funcion-info">
+          <div className="funcion-dato">
+            <span className="funcion-etiqueta">
+              Fecha
+            </span>
 
-      <p>
-        <strong>Género:</strong> {funcion.pelicula.genero}
-      </p>
+            <strong>{fecha}</strong>
+          </div>
 
-      <p>
-        <strong>Duración:</strong>{" "}
-        {funcion.pelicula.duracion} minutos
-      </p>
+          <div className="funcion-dato">
+            <span className="funcion-etiqueta">
+              Hora
+            </span>
 
-      <p>
-        <strong>Clasificación:</strong>{" "}
-        {funcion.pelicula.clasificacion}
-      </p>
+            <strong>{hora}</strong>
+          </div>
 
-      <hr />
+          <div className="funcion-dato">
+            <span className="funcion-etiqueta">
+              Sala
+            </span>
 
-      <p>
-        <strong>Fecha:</strong>{" "}
-        {new Date(funcion.fechaHora).toLocaleString("es-EC")}
-      </p>
+            <strong>{funcion.sala.nombre}</strong>
+          </div>
+        </div>
 
-      <p>
-        <strong>Sala:</strong> {funcion.sala.nombre}
-      </p>
+        {/* DISPONIBILIDAD */}
+        <div className="disponibilidad-contenedor">
+          <div className="disponibilidad-texto">
+            <span>Disponibilidad</span>
 
-      <p>
-        <strong>Precio:</strong> $
-        {funcion.precio.toFixed(2)}
-      </p>
+            <strong>
+              {disponibles <= 0
+                ? "Sin lugares"
+                : `${disponibles} lugares`}
+            </strong>
+          </div>
 
-      <p>
-        <strong>Disponibles:</strong>{" "}
-        {funcion.disponibles}
-      </p>
+          <div className="barra-disponibilidad">
+            <div
+              className={`barra-disponibilidad-valor ${tipoDisponibilidad}`}
+              style={{
+                width: `${porcentajeDisponible}%`,
+              }}
+            />
+          </div>
+        </div>
 
-      <button
-        disabled={funcion.disponibles <= 0}
-        onClick={() => onReservar(funcion)}
-      >
-        {funcion.disponibles > 0 ? "Reservar" : "Agotado"}
-      </button>
+        {/* PRECIO */}
+        <div className="precio-contenedor">
+          <div>
+            <span className="precio-etiqueta">
+              Precio por entrada
+            </span>
+
+            <div className="precio">
+              ${funcion.precio.toFixed(2)}
+            </div>
+          </div>
+
+          <button
+            className="btn-reservar"
+            type="button"
+            disabled={disponibles <= 0}
+            onClick={() => onReservar(funcion)}
+          >
+            {disponibles > 0
+              ? "Reservar"
+              : "Agotado"}
+          </button>
+        </div>
+      </div>
     </article>
   );
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import Mensaje from "./components/Mensaje";
-import FuncionCard from "./components/FuncionCard";
+import PeliculaCarteleraCard from "./components/PeliculaCarteleraCard";
 import CargaVista from "./components/CargaVista";
 
 import {
@@ -16,6 +16,30 @@ import {
   cancelarReserva,
   actualizarPelicula,
 } from "./services/api";
+
+const GENEROS_PELICULA = [
+  "Acción",
+  "Animación",
+  "Aventura",
+  "Ciencia ficción",
+  "Comedia",
+  "Drama",
+  "Familiar",
+  "Fantasía",
+  "Musical",
+  "Romance",
+  "Suspenso",
+  "Terror",
+  "Documental",
+];
+
+const CLASIFICACIONES_PELICULA = [
+  "ATP",
+  "+7",
+  "+12",
+  "+15",
+  "+18",
+];
 
 function App() {
   const [vista, setVista] = useState("cartelera");
@@ -612,6 +636,31 @@ function App() {
     );
 
   /* ======================================================
+     PELÍCULAS DE CARTELERA AGRUPADAS
+     Una sola tarjeta por película, aunque tenga varias
+     funciones, salas, fechas u horarios.
+     ====================================================== */
+
+  const peliculasCartelera = Array.from(
+    funcionesCartelera
+      .reduce((mapa, funcion) => {
+        const peliculaId = funcion.pelicula.id;
+
+        if (!mapa.has(peliculaId)) {
+          mapa.set(peliculaId, {
+            pelicula: funcion.pelicula,
+            funciones: [],
+          });
+        }
+
+        mapa.get(peliculaId).funciones.push(funcion);
+
+        return mapa;
+      }, new Map())
+      .values()
+  );
+
+  /* ======================================================
      FILTROS ACTIVOS
      ====================================================== */
 
@@ -1120,14 +1169,21 @@ function App() {
 
                   <p>
                     <strong>
-                      {
-                        funcionesCartelera.length
-                      }
+                      {peliculasCartelera.length}
                     </strong>{" "}
-                    {funcionesCartelera.length ===
-                    1
-                      ? "función encontrada"
-                      : "funciones encontradas"}
+                    {peliculasCartelera.length === 1
+                      ? "película encontrada"
+                      : "películas encontradas"}
+
+                    {funcionesCartelera.length > 0 && (
+                      <>
+                        {" · "}
+                        {funcionesCartelera.length}{" "}
+                        {funcionesCartelera.length === 1
+                          ? "función disponible"
+                          : "funciones disponibles"}
+                      </>
+                    )}
                   </p>
 
                   {hayFiltrosActivos && (
@@ -1146,8 +1202,7 @@ function App() {
 
                 {/* TARJETAS */}
 
-                {funcionesCartelera.length ===
-                0 ? (
+                {peliculasCartelera.length === 0 ? (
                   <div className="estado estado-cartelera">
 
                     <span className="estado-icono">
@@ -1155,45 +1210,35 @@ function App() {
                     </span>
 
                     <h3>
-                      No encontramos
-                      funciones
+                      No encontramos películas
                     </h3>
 
                     <p>
-                      Prueba cambiando los
-                      filtros o realizando
-                      otra búsqueda.
+                      No hay películas con funciones disponibles
+                      que coincidan con los filtros seleccionados.
                     </p>
 
                     {hayFiltrosActivos && (
                       <button
                         type="button"
                         className="btn-limpiar-filtros"
-                        onClick={
-                          limpiarFiltros
-                        }
+                        onClick={limpiarFiltros}
                       >
-                        Mostrar toda la
-                        cartelera
+                        Mostrar toda la cartelera
                       </button>
                     )}
 
                   </div>
                 ) : (
-                  <div className="grid">
+                  <div className="grid grid-peliculas-agrupadas">
 
-                    {funcionesCartelera.map(
-                      (funcion) => (
-                        <FuncionCard
-                          key={
-                            funcion.id
-                          }
-                          funcion={
-                            funcion
-                          }
-                          onReservar={
-                            setFuncionSeleccionada
-                          }
+                    {peliculasCartelera.map(
+                      ({ pelicula, funciones: funcionesPelicula }) => (
+                        <PeliculaCarteleraCard
+                          key={pelicula.id}
+                          pelicula={pelicula}
+                          funciones={funcionesPelicula}
+                          onReservar={setFuncionSeleccionada}
                         />
                       )
                     )}
@@ -2543,9 +2588,7 @@ function App() {
                         <div className="admin-form-grid">
                           <label>
                             Género
-                            <input
-                              type="text"
-                              placeholder="Ej. Ciencia ficción"
+                            <select
                               required
                               value={peliculaForm.genero}
                               onChange={(e) =>
@@ -2554,7 +2597,20 @@ function App() {
                                   genero: e.target.value,
                                 })
                               }
-                            />
+                            >
+                              <option value="">
+                                Seleccione género
+                              </option>
+
+                              {GENEROS_PELICULA.map((genero) => (
+                                <option
+                                  key={genero}
+                                  value={genero}
+                                >
+                                  {genero}
+                                </option>
+                              ))}
+                            </select>
                           </label>
 
                           <label>
@@ -2577,9 +2633,7 @@ function App() {
 
                         <label>
                           Clasificación
-                          <input
-                            type="text"
-                            placeholder="Ej. PG-13"
+                          <select
                             required
                             value={peliculaForm.clasificacion}
                             onChange={(e) =>
@@ -2588,7 +2642,22 @@ function App() {
                                 clasificacion: e.target.value,
                               })
                             }
-                          />
+                          >
+                            <option value="">
+                              Seleccione clasificación
+                            </option>
+
+                            {CLASIFICACIONES_PELICULA.map(
+                              (clasificacion) => (
+                                <option
+                                  key={clasificacion}
+                                  value={clasificacion}
+                                >
+                                  {clasificacion}
+                                </option>
+                              )
+                            )}
+                          </select>
                         </label>
 
                         <label>
@@ -2918,8 +2987,7 @@ function App() {
                         <div className="admin-form-grid">
                           <label>
                             Género
-                            <input
-                              type="text"
+                            <select
                               required
                               value={edicionPeliculaForm.genero}
                               onChange={(e) =>
@@ -2928,7 +2996,27 @@ function App() {
                                   genero: e.target.value,
                                 })
                               }
-                            />
+                            >
+                              {!GENEROS_PELICULA.includes(
+                                edicionPeliculaForm.genero
+                              ) &&
+                                edicionPeliculaForm.genero && (
+                                  <option
+                                    value={edicionPeliculaForm.genero}
+                                  >
+                                    {edicionPeliculaForm.genero}
+                                  </option>
+                                )}
+
+                              {GENEROS_PELICULA.map((genero) => (
+                                <option
+                                  key={genero}
+                                  value={genero}
+                                >
+                                  {genero}
+                                </option>
+                              ))}
+                            </select>
                           </label>
 
                           <label>
@@ -2950,8 +3038,7 @@ function App() {
 
                         <label>
                           Clasificación
-                          <input
-                            type="text"
+                          <select
                             required
                             value={edicionPeliculaForm.clasificacion}
                             onChange={(e) =>
@@ -2960,7 +3047,33 @@ function App() {
                                 clasificacion: e.target.value,
                               })
                             }
-                          />
+                          >
+                            {!CLASIFICACIONES_PELICULA.includes(
+                              edicionPeliculaForm.clasificacion
+                            ) &&
+                              edicionPeliculaForm.clasificacion && (
+                                <option
+                                  value={
+                                    edicionPeliculaForm.clasificacion
+                                  }
+                                >
+                                  {
+                                    edicionPeliculaForm.clasificacion
+                                  }
+                                </option>
+                              )}
+
+                            {CLASIFICACIONES_PELICULA.map(
+                              (clasificacion) => (
+                                <option
+                                  key={clasificacion}
+                                  value={clasificacion}
+                                >
+                                  {clasificacion}
+                                </option>
+                              )
+                            )}
+                          </select>
                         </label>
 
                         <label>

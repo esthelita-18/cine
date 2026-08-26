@@ -4549,3 +4549,223 @@ img {
   }
 }
 
+/* =========================================================
+   UNA SOLA TARJETA POR PELÍCULA
+   ========================================================= */
+
+.grid-peliculas-agrupadas {
+  grid-template-columns:
+    repeat(auto-fill, minmax(330px, 1fr));
+  align-items: start;
+}
+
+.pelicula-agrupada-card {
+  height: 100%;
+}
+
+.pelicula-agrupada-card .poster-contenedor {
+  height: 360px;
+}
+
+.pelicula-horarios {
+  margin-top: 20px;
+  padding-top: 17px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.pelicula-horarios-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 14px;
+}
+
+.pelicula-horarios-cabecera > span {
+  color: #e5e7eb;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.pelicula-horarios-cabecera small {
+  color: #747e8d;
+  font-size: 11px;
+}
+
+.grupo-fecha-funciones + .grupo-fecha-funciones {
+  margin-top: 17px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.fecha-funciones {
+  margin-bottom: 8px;
+  color: #8f98a8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.55px;
+  text-transform: uppercase;
+}
+
+.lista-horarios {
+  display: grid;
+  gap: 7px;
+}
+
+.pelicula-card .horario-funcion {
+  width: 100%;
+  display: grid;
+  grid-template-columns:
+    58px minmax(70px, 1fr) auto auto;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  padding: 10px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.035);
+  color: #cbd5e1;
+  box-shadow: none;
+  text-align: left;
+}
+
+.pelicula-card .horario-funcion:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(229, 9, 20, 0.38);
+  background: rgba(229, 9, 20, 0.09);
+  box-shadow: none;
+}
+
+.horario-hora {
+  color: white;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.horario-sala {
+  overflow: hidden;
+  color: #aeb6c2;
+  font-size: 12px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.horario-detalle {
+  color: #6ee7a0;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pelicula-card .horario-funcion strong {
+  color: white;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.pelicula-card .horario-funcion.agotado,
+.pelicula-card .horario-funcion:disabled {
+  border-color: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.018);
+  color: #535c68;
+  cursor: not-allowed;
+  opacity: 0.65;
+  transform: none;
+}
+
+.pelicula-card .horario-funcion.agotado .horario-hora,
+.pelicula-card .horario-funcion.agotado strong {
+  color: #6b7280;
+}
+
+.pelicula-card .horario-funcion.agotado .horario-detalle {
+  color: #f87171;
+}
+
+.pelicula-agrupada-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 15px;
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.pelicula-agrupada-footer > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.texto-seleccion-horario {
+  max-width: 150px;
+  color: #707989;
+  font-size: 11px;
+  line-height: 1.35;
+  text-align: right;
+}
+
+@media (max-width: 760px) {
+  .grid-peliculas-agrupadas {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .pelicula-agrupada-card .poster-contenedor {
+    height: 340px;
+  }
+
+  .pelicula-card .horario-funcion {
+    grid-template-columns:
+      55px minmax(65px, 1fr) auto;
+  }
+
+  .horario-detalle {
+    display: none;
+  }
+}
+
+@media (max-width: 650px) {
+  .grid-peliculas-agrupadas {
+    grid-template-columns: 1fr;
+  }
+
+  .pelicula-agrupada-card .poster-contenedor {
+    height: 420px;
+  }
+
+  .pelicula-card .horario-funcion {
+    grid-template-columns:
+      58px minmax(80px, 1fr) auto auto;
+  }
+
+  .horario-detalle {
+    display: inline;
+  }
+}
+
+@media (max-width: 390px) {
+  .pelicula-agrupada-card .poster-contenedor {
+    height: 380px;
+  }
+
+  .pelicula-card .horario-funcion {
+    grid-template-columns:
+      54px minmax(65px, 1fr) auto;
+  }
+
+  .horario-detalle {
+    display: none;
+  }
+
+  .pelicula-agrupada-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .texto-seleccion-horario {
+    max-width: none;
+    text-align: left;
+  }
+}

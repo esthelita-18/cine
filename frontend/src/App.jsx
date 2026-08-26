@@ -40,6 +40,15 @@ function App() {
   const [filtroFecha, setFiltroFecha] = useState("");
 
   /* ======================================================
+     FILTROS DEL HISTORIAL DE RESERVAS
+     ====================================================== */
+
+  const [busquedaReserva, setBusquedaReserva] = useState("");
+  const [filtroEstadoReserva, setFiltroEstadoReserva] = useState("");
+  const [reservaACancelar, setReservaACancelar] = useState(null);
+
+
+  /* ======================================================
      ADMINISTRACIÓN
      ====================================================== */
 
@@ -252,6 +261,10 @@ function App() {
      CANCELAR RESERVA
      ====================================================== */
 
+  function cerrarConfirmacionCancelacion() {
+    setReservaACancelar(null);
+  }
+
   async function manejarCancelarReserva(id) {
     try {
       setError("");
@@ -261,6 +274,8 @@ function App() {
       mostrarMensaje(
         "Reserva cancelada correctamente."
       );
+
+      setReservaACancelar(null);
 
       await cargarDatos();
     } catch (err) {
@@ -606,6 +621,63 @@ function App() {
     filtroPelicula !== "" ||
     filtroGenero !== "" ||
     filtroFecha !== "";
+
+  /* ======================================================
+     HISTORIAL DE RESERVAS
+     ====================================================== */
+
+  const reservasFiltradas = reservas
+    .filter((reserva) => {
+      const termino = normalizarTexto(busquedaReserva);
+
+      const coincideBusqueda =
+        termino === "" ||
+        normalizarTexto(reserva.cliente?.nombre).includes(termino) ||
+        normalizarTexto(reserva.cliente?.correo).includes(termino) ||
+        normalizarTexto(
+          reserva.funcion?.pelicula?.titulo
+        ).includes(termino);
+
+      const coincideEstado =
+        filtroEstadoReserva === "" ||
+        reserva.estado === filtroEstadoReserva;
+
+      return coincideBusqueda && coincideEstado;
+    })
+    .sort(
+      (a, b) =>
+        new Date(b.fechaCreada) -
+        new Date(a.fechaCreada)
+    );
+
+  const reservasActivasLista = reservas.filter(
+    (reserva) => reserva.estado === "ACTIVA"
+  );
+
+  const reservasCanceladasLista = reservas.filter(
+    (reserva) => reserva.estado === "CANCELADA"
+  );
+
+  const entradasActivas = reservasActivasLista.reduce(
+    (total, reserva) =>
+      total + Number(reserva.cantidad || 0),
+    0
+  );
+
+  const valorReservasActivas = reservasActivasLista.reduce(
+    (total, reserva) =>
+      total + Number(reserva.total || 0),
+    0
+  );
+
+  const hayFiltrosReservaActivos =
+    busquedaReserva.trim() !== "" ||
+    filtroEstadoReserva !== "";
+
+  function limpiarFiltrosReserva() {
+    setBusquedaReserva("");
+    setFiltroEstadoReserva("");
+  }
 
   /* ======================================================
      FUNCIÓN DESTACADA
@@ -1471,137 +1543,408 @@ function App() {
                 ================================================== */}
 
             {vista === "reservas" && (
-              <section>
+              <section className="reservas-page">
 
-                <h2>
-                  Historial de reservas
-                </h2>
+                {/* CABECERA */}
 
-                {reservas.length === 0 ? (
-                  <p className="estado">
-                    No existen reservas
-                    registradas.
+                <div className="reservas-cabecera">
+                  <div>
+                    <span className="reservas-kicker">
+                      Gestión de reservas
+                    </span>
+
+                    <h2>
+                      Historial de reservas
+                    </h2>
+
+                    <p>
+                      Consulta las reservas realizadas,
+                      revisa su estado y cancela las que
+                      sigan activas.
+                    </p>
+                  </div>
+                </div>
+
+                {/* ESTADÍSTICAS */}
+
+                <div className="reservas-estadisticas">
+
+                  <div className="reserva-stat-card">
+                    <span className="reserva-stat-etiqueta">
+                      Total reservas
+                    </span>
+
+                    <strong>
+                      {reservas.length}
+                    </strong>
+
+                    <small>
+                      Registros históricos
+                    </small>
+                  </div>
+
+                  <div className="reserva-stat-card">
+                    <span className="reserva-stat-etiqueta">
+                      Activas
+                    </span>
+
+                    <strong>
+                      {reservasActivasLista.length}
+                    </strong>
+
+                    <small>
+                      {reservasCanceladasLista.length} canceladas
+                    </small>
+                  </div>
+
+                  <div className="reserva-stat-card">
+                    <span className="reserva-stat-etiqueta">
+                      Entradas activas
+                    </span>
+
+                    <strong>
+                      {entradasActivas}
+                    </strong>
+
+                    <small>
+                      Boletos reservados
+                    </small>
+                  </div>
+
+                  <div className="reserva-stat-card">
+                    <span className="reserva-stat-etiqueta">
+                      Valor activo
+                    </span>
+
+                    <strong>
+                      ${valorReservasActivas.toFixed(2)}
+                    </strong>
+
+                    <small>
+                      Reservas no canceladas
+                    </small>
+                  </div>
+
+                </div>
+
+                {/* FILTROS */}
+
+                <div className="reservas-filtros">
+
+                  <div className="reserva-filtro-busqueda">
+
+                    <label htmlFor="buscar-reserva">
+                      Buscar
+                    </label>
+
+                    <input
+                      id="buscar-reserva"
+                      type="search"
+                      placeholder="Cliente, correo o película..."
+                      value={busquedaReserva}
+                      onChange={(e) =>
+                        setBusquedaReserva(e.target.value)
+                      }
+                    />
+
+                  </div>
+
+                  <div>
+
+                    <label htmlFor="estado-reserva">
+                      Estado
+                    </label>
+
+                    <select
+                      id="estado-reserva"
+                      value={filtroEstadoReserva}
+                      onChange={(e) =>
+                        setFiltroEstadoReserva(e.target.value)
+                      }
+                    >
+
+                      <option value="">
+                        Todos los estados
+                      </option>
+
+                      <option value="ACTIVA">
+                        Activas
+                      </option>
+
+                      <option value="CANCELADA">
+                        Canceladas
+                      </option>
+
+                    </select>
+
+                  </div>
+
+                </div>
+
+                {/* RESULTADOS */}
+
+                <div className="reservas-resumen-resultados">
+
+                  <p>
+                    <strong>
+                      {reservasFiltradas.length}
+                    </strong>{" "}
+                    {reservasFiltradas.length === 1
+                      ? "reserva encontrada"
+                      : "reservas encontradas"}
                   </p>
+
+                  {hayFiltrosReservaActivos && (
+                    <button
+                      type="button"
+                      className="btn-limpiar-filtros"
+                      onClick={limpiarFiltrosReserva}
+                    >
+                      Limpiar filtros
+                    </button>
+                  )}
+
+                </div>
+
+                {/* TABLA */}
+
+                {reservasFiltradas.length === 0 ? (
+
+                  <div className="estado reserva-estado-vacio">
+
+                    <h3>
+                      No encontramos reservas
+                    </h3>
+
+                    <p>
+                      No existen registros que coincidan
+                      con los filtros seleccionados.
+                    </p>
+
+                    {hayFiltrosReservaActivos && (
+                      <button
+                        type="button"
+                        className="btn-limpiar-filtros"
+                        onClick={limpiarFiltrosReserva}
+                      >
+                        Mostrar todas las reservas
+                      </button>
+                    )}
+
+                  </div>
+
                 ) : (
-                  <div className="tabla-contenedor">
+
+                  <div className="tabla-contenedor reservas-tabla">
 
                     <table>
 
                       <thead>
                         <tr>
-                          <th>
-                            Cliente
-                          </th>
-                          <th>
-                            Película
-                          </th>
-                          <th>
-                            Entradas
-                          </th>
-                          <th>
-                            Total
-                          </th>
-                          <th>
-                            Estado
-                          </th>
-                          <th>
-                            Acción
-                          </th>
+                          <th>Cliente</th>
+                          <th>Película / función</th>
+                          <th>Registrada</th>
+                          <th>Entradas</th>
+                          <th>Total</th>
+                          <th>Estado</th>
+                          <th>Acción</th>
                         </tr>
                       </thead>
 
                       <tbody>
 
-                        {reservas.map(
-                          (reserva) => (
-                            <tr
-                              key={
-                                reserva.id
-                              }
-                            >
+                        {reservasFiltradas.map((reserva) => (
 
-                              <td>
-                                {
-                                  reserva
-                                    .cliente
-                                    .nombre
+                          <tr key={reserva.id}>
+
+                            <td>
+                              <div className="reserva-cliente">
+
+                                <strong>
+                                  {reserva.cliente.nombre}
+                                </strong>
+
+                                <span>
+                                  {reserva.cliente.correo}
+                                </span>
+
+                              </div>
+                            </td>
+
+                            <td>
+                              <div className="reserva-funcion-tabla">
+
+                                <strong>
+                                  {reserva.funcion.pelicula.titulo}
+                                </strong>
+
+                                <span>
+                                  {new Date(
+                                    reserva.funcion.fechaHora
+                                  ).toLocaleString("es-EC", {
+                                    day: "2-digit",
+                                    month: "short",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+
+                                  {" · "}
+
+                                  {reserva.funcion.sala?.nombre}
+                                </span>
+
+                              </div>
+                            </td>
+
+                            <td>
+                              {reserva.fechaCreada
+                                ? new Date(
+                                    reserva.fechaCreada
+                                  ).toLocaleString("es-EC", {
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })
+                                : "-"}
+                            </td>
+
+                            <td>
+                              <span className="reserva-cantidad-tabla">
+                                {reserva.cantidad}
+                              </span>
+                            </td>
+
+                            <td>
+                              <strong className="reserva-total-tabla">
+                                ${reserva.total.toFixed(2)}
+                              </strong>
+                            </td>
+
+                            <td>
+                              <span
+                                className={
+                                  reserva.estado === "ACTIVA"
+                                    ? "estado-activo"
+                                    : "estado-cancelado"
                                 }
+                              >
+                                {reserva.estado}
+                              </span>
+                            </td>
 
-                                <br />
+                            <td>
+                              {reserva.estado === "ACTIVA" ? (
 
-                                <small>
-                                  {
-                                    reserva
-                                      .cliente
-                                      .correo
-                                  }
-                                </small>
-                              </td>
-
-                              <td>
-                                {
-                                  reserva
-                                    .funcion
-                                    .pelicula
-                                    .titulo
-                                }
-                              </td>
-
-                              <td>
-                                {
-                                  reserva.cantidad
-                                }
-                              </td>
-
-                              <td>
-                                $
-                                {reserva.total.toFixed(
-                                  2
-                                )}
-                              </td>
-
-                              <td>
-                                <span
-                                  className={
-                                    reserva.estado ===
-                                    "ACTIVA"
-                                      ? "estado-activo"
-                                      : "estado-cancelado"
+                                <button
+                                  type="button"
+                                  className="peligro"
+                                  onClick={() =>
+                                    setReservaACancelar(reserva)
                                   }
                                 >
-                                  {
-                                    reserva.estado
-                                  }
+                                  Cancelar
+                                </button>
+
+                              ) : (
+
+                                <span className="reserva-sin-accion">
+                                  Sin acciones
                                 </span>
-                              </td>
 
-                              <td>
-                                {reserva.estado ===
-                                "ACTIVA" ? (
-                                  <button
-                                    className="peligro"
-                                    onClick={() =>
-                                      manejarCancelarReserva(
-                                        reserva.id
-                                      )
-                                    }
-                                  >
-                                    Cancelar
-                                  </button>
-                                ) : (
-                                  "-"
-                                )}
-                              </td>
+                              )}
+                            </td>
 
-                            </tr>
-                          )
-                        )}
+                          </tr>
+
+                        ))}
 
                       </tbody>
 
                     </table>
 
                   </div>
+
+                )}
+
+                {/* MODAL DE CONFIRMACIÓN */}
+
+                {reservaACancelar && (
+
+                  <div className="modal-fondo">
+
+                    <div className="modal modal-cancelacion">
+
+                      <span className="cancelacion-kicker">
+                        Confirmar cancelación
+                      </span>
+
+                      <h2>
+                        ¿Cancelar esta reserva?
+                      </h2>
+
+                      <p>
+                        La reserva de{" "}
+
+                        <strong>
+                          {reservaACancelar.cliente.nombre}
+                        </strong>
+
+                        {" "}para{" "}
+
+                        <strong>
+                          {
+                            reservaACancelar.funcion
+                              .pelicula.titulo
+                          }
+                        </strong>
+
+                        {" "}quedará registrada como cancelada.
+                      </p>
+
+                      <div className="cancelacion-resumen">
+
+                        <span>
+                          {reservaACancelar.cantidad} entrada(s)
+                        </span>
+
+                        <strong>
+                          ${reservaACancelar.total.toFixed(2)}
+                        </strong>
+
+                      </div>
+
+                      <div className="cancelacion-acciones">
+
+                        <button
+                          type="button"
+                          className="btn-confirmar-cancelacion"
+                          onClick={() =>
+                            manejarCancelarReserva(
+                              reservaACancelar.id
+                            )
+                          }
+                        >
+                          Sí, cancelar reserva
+                        </button>
+
+                        <button
+                          type="button"
+                          className="secundario"
+                          onClick={
+                            cerrarConfirmacionCancelacion
+                          }
+                        >
+                          Volver
+                        </button>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
                 )}
 
               </section>
